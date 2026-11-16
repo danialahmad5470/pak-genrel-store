@@ -1,0 +1,2671 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl" id="html-root">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>پاک کریانہ اینڈ جنرل سٹور - POS, Inventory & Khata System</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Gulzar (Urdu Calligraphy), Noto Nastaliq Urdu, and Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Gulzar&family=Inter:wght@400;500;600;700&family=Noto+Nastaliq+Urdu:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        jameel: ['"Jameel Noori Nastaleeq"', '"Gulzar"', '"Noto Nastaliq Urdu"', 'serif'],
+                        calligraphy: ['"Gulzar"', '"Jameel Noori Nastaleeq"', '"Noto Nastaliq Urdu"', 'serif'],
+                        urdu: ['"Jameel Noori Nastaleeq"', '"Noto Nastaliq Urdu"', 'serif'],
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            800: '#065f46',
+                            900: '#064e3b',
+                            950: '#022c22'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Jameel Noori Nastaleeq Web Font Definition with multiple CDN fallbacks */
+        @font-face {
+            font-family: 'Jameel Noori Nastaleeq';
+            src: local('Jameel Noori Nastaleeq'),
+                 local('JameelNooriNastaleeq'),
+                 local('Jameel Noori Nastaleeq Regular'),
+                 url('https://cdn.jsdelivr.net/gh/tariq-abdullah/urdu-web-font-CDN/JameelNooriNastaleeq.woff') format('woff'),
+                 url('https://cdn.jsdelivr.net/gh/urdutext/jameel-noori-nastaleeq@master/JameelNooriNastaleeq.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        /* Full Website Typography for Urdu Mode */
+        html[lang="ur"] body,
+        html[lang="ur"] button,
+        html[lang="ur"] input,
+        html[lang="ur"] select,
+        html[lang="ur"] table {
+            font-family: 'Jameel Noori Nastaleeq', 'Gulzar', 'Noto Nastaliq Urdu', serif;
+            letter-spacing: 0.2px;
+        }
+
+        /* Body line height adjustment for Nastaleeq strokes */
+        html[lang="ur"] body {
+            line-height: 2.1;
+        }
+
+        /* Typography for English Mode */
+        html[lang="en"] body,
+        html[lang="en"] button,
+        html[lang="en"] input,
+        html[lang="en"] select,
+        html[lang="en"] table {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            line-height: 1.5;
+        }
+
+        /* Specialized Royal Calligraphy Heading */
+        .calligraphy-title {
+            font-family: 'Gulzar', 'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', serif;
+            background: linear-gradient(135deg, #fef08a 0%, #ffffff 40%, #86efac 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+            line-height: 1.6;
+            font-weight: 700;
+        }
+
+        /* English Title Styling */
+        html[lang="en"] .calligraphy-title {
+            font-family: 'Inter', sans-serif;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #fef08a 0%, #ffffff 50%, #86efac 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Custom Scrollbars */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Thermal Receipt Print Styles */
+        @media print {
+            body * { visibility: hidden; }
+            #receipt-printable, #receipt-printable * { visibility: visible; }
+            #receipt-printable {
+                position: fixed;
+                left: 0;
+                top: 0;
+                width: 78mm;
+                max-width: 100%;
+                margin: 0 auto;
+                padding: 10px;
+                background: #fff;
+                color: #000;
+                font-family: 'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', monospace;
+                font-size: 11px;
+                line-height: 1.8;
+                box-shadow: none;
+                border: none;
+            }
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col selection:bg-emerald-500 selection:text-white">
+
+    <!-- Top Header -->
+    <header class="bg-brand-900 text-white shadow-xl sticky top-0 z-40 border-b border-emerald-700/40">
+        <div class="container mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-4">
+            
+            <!-- Store Calligraphy Branding -->
+            <div class="flex items-center gap-3.5">
+                <!-- Royal Medallion Icon -->
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400/20 via-emerald-600/30 to-brand-950 flex items-center justify-center text-2xl shadow-lg border border-amber-300/40 shrink-0">
+                    🏪
+                </div>
+                <div>
+                    <!-- Calligraphic Store Title -->
+                    <div class="flex items-center gap-2">
+                        <span class="text-amber-300 text-sm opacity-80 hidden sm:inline">༺</span>
+                        <h1 class="text-2xl md:text-3xl calligraphy-title" id="store-title">
+                            پاک کریانہ اینڈ جنرل سٹور
+                        </h1>
+                        <span class="text-amber-300 text-sm opacity-80 hidden sm:inline">༻</span>
+                    </div>
+                    <!-- Owner info & subtitle -->
+                    <p class="text-xs text-emerald-200/90 font-medium tracking-wide flex items-center gap-2 mt-0.5" id="store-owner">
+                        <span>اونر: دانیال احمد</span>
+                        <span>•</span>
+                        <span dir="ltr">0301-4210508</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Action Controls (Bilingual Selector, Sound, Backup/Restore) -->
+            <div class="flex items-center gap-3 flex-wrap">
+                
+                <!-- BILINGUAL LANGUAGE SELECTOR (اردو / ENGLISH) -->
+                <div class="flex items-center bg-brand-950/70 p-1 rounded-xl border border-emerald-500/40 shadow-inner">
+                    <button onclick="setLanguage('ur')" id="btn-lang-ur" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all duration-200 bg-brand-600 text-white shadow">
+                        <span class="text-sm">🇵🇰</span>
+                        <span>اردو</span>
+                    </button>
+                    <button onclick="setLanguage('en')" id="btn-lang-en" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all duration-200 text-emerald-200 hover:text-white">
+                        <span class="text-sm">🇬🇧</span>
+                        <span>English</span>
+                    </button>
+                </div>
+
+                <!-- Sound Toggle -->
+                <button onclick="toggleSound()" id="sound-btn" title="آواز (Beep)" class="bg-brand-950/60 hover:bg-brand-950 text-white px-2.5 py-2 rounded-xl text-xs border border-emerald-600/40 flex items-center gap-1.5 transition">
+                    <span id="sound-icon">🔊</span>
+                    <span id="sound-text" class="hidden sm:inline">آواز فعال</span>
+                </button>
+
+                <!-- Backup & Restore -->
+                <div class="flex items-center gap-1 bg-brand-950/60 p-0.5 rounded-xl border border-emerald-600/40">
+                    <button onclick="exportBackup()" title="بیک اپ ڈاؤن لوڈ کریں" class="hover:bg-amber-600 text-white px-2.5 py-1.5 rounded-lg text-xs flex items-center gap-1 transition">
+                        💾 <span data-i18n="backup_btn">بیک اپ</span>
+                    </button>
+                    <label for="restore-file-input" title="بیک اپ بحال کریں" class="hover:bg-blue-600 text-white px-2.5 py-1.5 rounded-lg text-xs flex items-center gap-1 cursor-pointer transition">
+                        📥 <span data-i18n="restore_btn">بحال کریں</span>
+                    </label>
+                    <input type="file" id="restore-file-input" accept=".json" class="hidden" onchange="importBackup(event)">
+                </div>
+
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Bar -->
+    <nav class="bg-white shadow-sm border-b sticky top-[72px] z-30">
+        <div class="container mx-auto px-4 flex overflow-x-auto gap-2 py-2.5">
+            <button onclick="switchTab('pos')" id="tab-pos" class="tab-btn px-4 py-2 rounded-xl font-medium text-brand-800 bg-brand-50 whitespace-nowrap transition flex items-center gap-2" data-i18n="tab_pos">
+                🛒 بلنگ (POS)
+            </button>
+            <button onclick="switchTab('inventory')" id="tab-inventory" class="tab-btn px-4 py-2 rounded-xl font-medium text-slate-600 hover:bg-slate-100 whitespace-nowrap transition flex items-center gap-2" data-i18n="tab_inventory">
+                📦 گودام / سٹاک
+            </button>
+            <button onclick="switchTab('sales')" id="tab-sales" class="tab-btn px-4 py-2 rounded-xl font-medium text-slate-600 hover:bg-slate-100 whitespace-nowrap transition flex items-center gap-2" data-i18n="tab_sales">
+                📊 فروخت اور منافع
+            </button>
+            <!-- NEW KHATA TAB -->
+            <button onclick="switchTab('khata')" id="tab-khata" class="tab-btn px-4 py-2 rounded-xl font-medium text-slate-600 hover:bg-slate-100 whitespace-nowrap transition flex items-center gap-2" data-i18n="tab_khata">
+                📒 ادھار و کھاتہ بک
+            </button>
+            <button onclick="switchTab('payroll')" id="tab-payroll" class="tab-btn px-4 py-2 rounded-xl font-medium text-slate-600 hover:bg-slate-100 whitespace-nowrap transition flex items-center gap-2" data-i18n="tab_payroll">
+                👥 ملازمین تنخواہیں
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="container mx-auto px-4 py-6 flex-grow">
+
+        <!-- ========================================== -->
+        <!-- TAB 1: POS & Billing                       -->
+        <!-- ========================================== -->
+        <div id="section-pos" class="space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+                <!-- Left Column: Search & Quick Items (7 cols) -->
+                <div class="lg:col-span-7 space-y-4">
+                    <!-- Barcode Search Box -->
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+                        <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2" data-i18n="scan_label">بارکوڈ سکین کریں یا نام سے تلاش کریں:</label>
+                        <div class="flex gap-2">
+                            <div class="relative flex-grow">
+                                <span class="absolute inset-y-0 start-0 flex items-center ps-3 text-slate-400">
+                                    🔍
+                                </span>
+                                <input type="text" id="barcode-input" autofocus placeholder="بارکوڈ نمبر درج کریں یا سکین کریں..." class="w-full border border-slate-300 rounded-xl ps-9 pe-4 py-2.5 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition">
+                            </div>
+                            <button onclick="addProductByInput()" class="bg-brand-600 hover:bg-brand-700 text-white px-5 py-2.5 rounded-xl font-medium text-sm transition shadow-sm active:scale-95" data-i18n="add_btn">
+                                شامل کریں
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Quick Catalog Grid -->
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+                        <div class="flex flex-wrap items-center justify-between gap-2 border-b pb-2">
+                            <h3 class="font-bold text-slate-800 text-sm flex items-center gap-1.5" data-i18n="quick_items">
+                                ⚡ فوری اشیاء (Quick Catalog)
+                            </h3>
+                            <div class="flex items-center gap-1 text-xs">
+                                <button onclick="filterCategory('all')" class="cat-pill active px-2.5 py-1 rounded-lg bg-brand-600 text-white" data-cat="all" data-i18n="cat_all">سب</button>
+                                <button onclick="filterCategory('ration')" class="cat-pill px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700" data-cat="ration" data-i18n="cat_ration">راشن</button>
+                                <button onclick="filterCategory('tea_milk')" class="cat-pill px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700" data-cat="tea_milk" data-i18n="cat_tea_milk">دودھ و چائے</button>
+                                <button onclick="filterCategory('clean')" class="cat-pill px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700" data-cat="clean" data-i18n="cat_clean">صابن و سرف</button>
+                            </div>
+                        </div>
+
+                        <!-- Grid -->
+                        <div id="quick-items-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 max-h-[440px] overflow-y-auto p-1">
+                            <!-- Populated via JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Cart & Checkout (5 cols) -->
+                <div class="lg:col-span-5">
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between sticky top-[145px]">
+                        <!-- Cart Header -->
+                        <div class="p-4 border-b border-slate-100 flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="text-xl">🛒</span>
+                                <h3 class="font-bold text-base text-slate-800" data-i18n="cart_title">موجودہ بل (Current Cart)</h3>
+                            </div>
+                            <button onclick="clearCart()" class="text-xs text-rose-500 hover:text-rose-700 hover:underline" data-i18n="clear_cart_btn">کارٹ خالی کریں</button>
+                        </div>
+
+                        <!-- Customer Details (Optional) -->
+                        <div class="px-4 pt-3 pb-1 grid grid-cols-2 gap-2 bg-slate-50 border-b border-slate-100">
+                            <div>
+                                <label class="block text-[11px] font-medium text-slate-500 mb-1" data-i18n="lbl_cust_name">گاہک کا نام (اختیاری):</label>
+                                <input type="text" id="cart-customer-name" placeholder="مثلاً: محمد خان" class="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs outline-none focus:border-brand-500">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-medium text-slate-500 mb-1" data-i18n="lbl_cust_phone">واٹس ایپ نمبر:</label>
+                                <input type="text" id="cart-customer-phone" placeholder="0300-1234567" class="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs outline-none focus:border-brand-500">
+                            </div>
+                        </div>
+
+                        <!-- Cart Items List -->
+                        <div id="cart-items-list" class="p-4 space-y-2.5 max-h-64 overflow-y-auto divide-y divide-slate-100">
+                            <div class="text-slate-400 text-center py-10 flex flex-col items-center">
+                                <span class="text-4xl mb-2 opacity-50">🛍️</span>
+                                <p data-i18n="empty_cart">کارٹ خالی ہے...</p>
+                            </div>
+                        </div>
+
+                        <!-- Bill Calculations & Checkout -->
+                        <div class="p-4 border-t border-slate-100 bg-slate-50/70 rounded-b-2xl space-y-3">
+                            <div class="space-y-1.5 text-xs text-slate-600">
+                                <div class="flex justify-between">
+                                    <span data-i18n="lbl_subtotal">سب ٹوٹل:</span>
+                                    <span id="cart-subtotal" class="font-semibold text-slate-800">Rs. 0</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span data-i18n="lbl_discount">رعایت (Discount Rs.):</span>
+                                    <input type="number" id="cart-discount" min="0" value="0" oninput="calculateCartTotals()" class="w-20 text-center border border-slate-200 rounded px-2 py-0.5 bg-white text-xs">
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span data-i18n="lbl_payment_mode">ادائیگی کا طریقہ:</span>
+                                    <select id="cart-payment-mode" class="border border-slate-200 rounded px-2 py-0.5 bg-white text-xs font-medium">
+                                        <option value="Cash">نقد (Cash)</option>
+                                        <option value="EasyPaisa">ایزی پیسہ (EasyPaisa)</option>
+                                        <option value="JazzCash">جاز کیش (JazzCash)</option>
+                                        <option value="Udhaar">ادھار / کھاتہ (Credit)</option>
+                                    </select>
+                                </div>
+                                <div class="flex justify-between items-center pt-1">
+                                    <span data-i18n="lbl_cash_received">وصول شدہ رقم:</span>
+                                    <input type="number" id="cart-cash-received" min="0" placeholder="0" oninput="calculateChangeDue()" class="w-24 text-center border border-slate-200 rounded px-2 py-0.5 bg-white text-xs">
+                                </div>
+                                <div class="flex justify-between text-xs font-semibold text-slate-500">
+                                    <span data-i18n="lbl_change_due">بقایا (Change Due):</span>
+                                    <span id="cart-change-due" class="text-slate-800 font-bold">Rs. 0</span>
+                                </div>
+                            </div>
+
+                            <div class="flex justify-between font-bold text-lg pt-2 border-t border-slate-200">
+                                <span data-i18n="total_amount">کل واجب الادا:</span>
+                                <span id="cart-grand-total" class="text-brand-700">Rs. 0</span>
+                            </div>
+
+                            <button onclick="completeSale()" class="w-full bg-brand-600 hover:bg-brand-700 active:scale-[0.98] text-white py-3 rounded-xl font-bold text-base shadow-sm transition flex items-center justify-center gap-2" data-i18n="checkout_btn">
+                                <span>🧾</span>
+                                <span>بل مکمل کریں اور رسید بنائیں</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 2: Inventory / Warehouse               -->
+        <!-- ========================================== -->
+        <div id="section-inventory" class="hidden space-y-6">
+            <!-- Inventory Top Bar -->
+            <div class="flex flex-wrap justify-between items-center gap-3 bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+                <div class="flex items-center gap-2 flex-grow max-w-md">
+                    <span class="text-slate-400">🔍</span>
+                    <input type="text" id="inventory-search" placeholder="پروڈکٹ نام یا بارکوڈ تلاش کریں..." oninput="renderInventory()" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="openAddProductModal()" class="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition shadow-sm flex items-center gap-1.5" data-i18n="add_new_prod">
+                        <span>+</span>
+                        <span>نئی پروڈکٹ شامل کریں</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Inventory Metric Pills -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider" data-i18n="stat_total_items">کل پروڈکٹس</p>
+                    <h4 id="stat-inv-total-items" class="text-2xl font-bold text-slate-800 mt-1">0</h4>
+                </div>
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-amber-200 bg-amber-50/40">
+                    <p class="text-xs font-semibold text-amber-700 uppercase tracking-wider" data-i18n="stat_low_stock">کم سٹاک وارننگ (5 یا کم)</p>
+                    <h4 id="stat-inv-low-stock" class="text-2xl font-bold text-amber-700 mt-1">0</h4>
+                </div>
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-emerald-200 bg-emerald-50/40">
+                    <p class="text-xs font-semibold text-brand-700 uppercase tracking-wider" data-i18n="stat_stock_val">کل مالیت (خرید قیمت پر)</p>
+                    <h4 id="stat-inv-stock-value" class="text-2xl font-bold text-brand-700 mt-1">Rs. 0</h4>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-start border-collapse text-sm">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-600 uppercase tracking-wider text-start">
+                                <th class="p-3 text-start" data-i18n="th_barcode">بارکوڈ</th>
+                                <th class="p-3 text-start" data-i18n="th_name">پروڈکٹ کا نام</th>
+                                <th class="p-3 text-start" data-i18n="th_cost">خرید قیمت</th>
+                                <th class="p-3 text-start" data-i18n="th_price">فروخت قیمت</th>
+                                <th class="p-3 text-start" data-i18n="th_margin">منافع فی یونٹ</th>
+                                <th class="p-3 text-start" data-i18n="th_stock">کل خریدی</th>
+                                <th class="p-3 text-start" data-i18n="th_sold">فروخت شدہ</th>
+                                <th class="p-3 text-start" data-i18n="th_remaining">باقی سٹاک</th>
+                                <th class="p-3 text-start" data-i18n="th_action">عمل</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventory-table-body" class="divide-y divide-slate-100">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 3: Sales History                       -->
+        <!-- ========================================== -->
+        <div id="section-sales" class="hidden space-y-6">
+            <!-- Stats Overview -->
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-brand-200 bg-brand-50/30">
+                    <p class="text-xs font-semibold text-slate-500" data-i18n="stat_sales">کل فروخت (Total Revenue)</p>
+                    <h4 id="stat-total-revenue" class="text-2xl font-bold text-brand-700 mt-1">Rs. 0</h4>
+                </div>
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-blue-200 bg-blue-50/30">
+                    <p class="text-xs font-semibold text-slate-500" data-i18n="stat_profit">کل منافع (Net Profit)</p>
+                    <h4 id="stat-total-profit" class="text-2xl font-bold text-blue-700 mt-1">Rs. 0</h4>
+                </div>
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-amber-200 bg-amber-50/30">
+                    <p class="text-xs font-semibold text-slate-500" data-i18n="stat_bills">کل بلز (Total Invoices)</p>
+                    <h4 id="stat-total-bills" class="text-2xl font-bold text-amber-700 mt-1">0</h4>
+                </div>
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-purple-200 bg-purple-50/30">
+                    <p class="text-xs font-semibold text-slate-500" data-i18n="stat_items_sold">کل آئٹمز فروخت</p>
+                    <h4 id="stat-total-items-sold" class="text-2xl font-bold text-purple-700 mt-1">0</h4>
+                </div>
+            </div>
+
+            <!-- Filter Bar -->
+            <div class="flex flex-wrap justify-between items-center gap-3 bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+                <div class="flex items-center gap-2 flex-grow max-w-sm">
+                    <span class="text-slate-400">🔍</span>
+                    <input type="text" id="sales-search" placeholder="بل نمبر یا گاہک کا نام تلاش کریں..." oninput="renderSales()" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+                <div class="text-xs text-slate-500" data-i18n="sales_auto_saved">
+                    * تمام فروخت تاریخ کے مطابق محفوظ ہیں
+                </div>
+            </div>
+
+            <!-- Sales Table -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-start border-collapse text-sm">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-600 uppercase tracking-wider text-start">
+                                <th class="p-3 text-start" data-i18n="th_invoice">بل نمبر</th>
+                                <th class="p-3 text-start" data-i18n="th_date">تاریخ و وقت</th>
+                                <th class="p-3 text-start" data-i18n="th_customer">گاہک</th>
+                                <th class="p-3 text-start" data-i18n="th_pay_method">طریقہ ادائیگی</th>
+                                <th class="p-3 text-start" data-i18n="th_item_count">اشیاء</th>
+                                <th class="p-3 text-start" data-i18n="th_grand_total">کل رقم</th>
+                                <th class="p-3 text-start" data-i18n="th_sale_profit">منافع</th>
+                                <th class="p-3 text-start" data-i18n="th_action">عمل</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sales-table-body" class="divide-y divide-slate-100">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 4: Khata / Udhaar (NEW!)              -->
+        <!-- ========================================== -->
+        <div id="section-khata" class="hidden space-y-6">
+            
+            <!-- Khata Top Summary Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <!-- 1. Customers Debt (Receivable) -->
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-emerald-200 bg-emerald-50/30">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-semibold text-emerald-800" data-i18n="stat_khata_receivable">گاہکوں کا ادھار (وصول کرنا ہے)</p>
+                            <h4 id="stat-khata-receivable" class="text-2xl font-bold text-emerald-700 mt-1">Rs. 0</h4>
+                        </div>
+                        <span class="text-2xl p-2 bg-emerald-100 rounded-xl text-emerald-700">📥</span>
+                    </div>
+                    <p class="text-[11px] text-emerald-600 mt-2 font-medium" id="stat-debtors-count">0 گاہکوں سے رقم لینی ہے</p>
+                </div>
+
+                <!-- 2. Suppliers Debt (Payable) -->
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-rose-200 bg-rose-50/30">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-semibold text-rose-800" data-i18n="stat_khata_payable">سپلائرز کا ادھار (دکاندار نے دینا ہے)</p>
+                            <h4 id="stat-khata-payable" class="text-2xl font-bold text-rose-700 mt-1">Rs. 0</h4>
+                        </div>
+                        <span class="text-2xl p-2 bg-rose-100 rounded-xl text-rose-700">📤</span>
+                    </div>
+                    <p class="text-[11px] text-rose-600 mt-2 font-medium" id="stat-creditors-count">0 سپلائرز کو رقم دینی ہے</p>
+                </div>
+
+                <!-- 3. Net Khata Balance -->
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-blue-200 bg-blue-50/30">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-semibold text-blue-800" data-i18n="stat_khata_net">خالص کھاتہ پوزیشن (Net Balance)</p>
+                            <h4 id="stat-khata-net" class="text-2xl font-bold text-blue-700 mt-1">Rs. 0</h4>
+                        </div>
+                        <span class="text-2xl p-2 bg-blue-100 rounded-xl text-blue-700">⚖️</span>
+                    </div>
+                    <p class="text-[11px] text-blue-600 mt-2 font-medium" id="stat-khata-net-desc">لینے اور دینے کا فرق</p>
+                </div>
+
+                <!-- 4. Total Accounts -->
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider" data-i18n="stat_khata_total_accounts">کل کھاتے (Accounts)</p>
+                            <h4 id="stat-khata-total-accounts" class="text-2xl font-bold text-slate-800 mt-1">0</h4>
+                        </div>
+                        <span class="text-2xl p-2 bg-slate-100 rounded-xl text-slate-600">📒</span>
+                    </div>
+                    <p class="text-[11px] text-slate-500 mt-2 font-medium" data-i18n="stat_khata_active">فعال کھاتہ داران</p>
+                </div>
+            </div>
+
+            <!-- Khata Sub-Tabs Switcher -->
+            <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-3 rounded-2xl shadow-sm border border-slate-200">
+                <div class="inline-flex bg-slate-100 p-1 rounded-xl">
+                    <button onclick="switchKhataSubTab('customers')" id="subtab-btn-customers" class="px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 bg-brand-600 text-white shadow">
+                        <span>📥</span>
+                        <span data-i18n="khata_subtab_customers">گاہکوں کا ادھار (قرضہ وصول کرنا ہے)</span>
+                    </button>
+                    <button onclick="switchKhataSubTab('suppliers')" id="subtab-btn-suppliers" class="px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 text-slate-600 hover:text-slate-900">
+                        <span>📤</span>
+                        <span data-i18n="khata_subtab_suppliers">سپلائرز کا قرضہ (دکاندار نے دینا ہے)</span>
+                    </button>
+                </div>
+
+                <!-- Khata Add Action Button -->
+                <div id="khata-add-btn-wrapper">
+                    <button onclick="openAddCustomerDebtModal()" id="btn-add-customer-debt" class="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-xl text-xs font-medium transition shadow-sm flex items-center gap-1.5">
+                        <span>+</span>
+                        <span data-i18n="btn_add_cust_debt">نیا گاہک کھاتہ شامل کریں</span>
+                    </button>
+                    <button onclick="openAddSupplierDebtModal()" id="btn-add-supplier-debt" class="hidden bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl text-xs font-medium transition shadow-sm flex items-center gap-1.5">
+                        <span>+</span>
+                        <span data-i18n="btn_add_supp_debt">نیا سپلائر کھاتہ شامل کریں</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- SUB-SECTION 1: Customer Debtors Table (گاہک جن سے وصول کرنا ہے) -->
+            <div id="khata-customers-container" class="space-y-4">
+                <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-3 rounded-2xl shadow-sm border border-slate-200">
+                    <div class="flex items-center gap-2 flex-grow max-w-sm">
+                        <span class="text-slate-400">🔍</span>
+                        <input type="text" id="khata-customer-search" placeholder="گاہک کا نام یا فون تلاش کریں..." oninput="renderCustomerKhata()" class="w-full border border-slate-200 rounded-xl px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-brand-500">
+                    </div>
+                    <div class="text-xs text-slate-500">
+                        * گاہک کو بقایا کی یاد دہانی واٹس ایپ پر ایک کلک سے بھیجی جا سکتی ہے
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-start border-collapse text-sm">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-600 uppercase tracking-wider text-start">
+                                    <th class="p-3 text-start" data-i18n="th_k_name">گاہک کا نام</th>
+                                    <th class="p-3 text-start" data-i18n="th_k_phone">فون نمبر</th>
+                                    <th class="p-3 text-start" data-i18n="th_k_address">پتہ / علاقہ</th>
+                                    <th class="p-3 text-start" data-i18n="th_k_total_credit">کل ادھار</th>
+                                    <th class="p-3 text-start" data-i18n="th_k_received">وصول شدہ</th>
+                                    <th class="p-3 text-start" data-i18n="th_k_remaining">باقی قرضہ</th>
+                                    <th class="p-3 text-start" data-i18n="th_k_last_date">آخری تاریخ</th>
+                                    <th class="p-3 text-start" data-i18n="th_action">عمل</th>
+                                </tr>
+                            </thead>
+                            <tbody id="khata-customers-tbody" class="divide-y divide-slate-100">
+                                <!-- Populated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUB-SECTION 2: Suppliers Payables Table (سپلائرز جن کو دکاندار نے دینا ہے) -->
+            <div id="khata-suppliers-container" class="hidden space-y-4">
+                <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-3 rounded-2xl shadow-sm border border-slate-200">
+                    <div class="flex items-center gap-2 flex-grow max-w-sm">
+                        <span class="text-slate-400">🔍</span>
+                        <input type="text" id="khata-supplier-search" placeholder="سپلائر، کمپنی یا ڈیلر تلاش کریں..." oninput="renderSupplierKhata()" class="w-full border border-slate-200 rounded-xl px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-rose-500">
+                    </div>
+                    <div class="text-xs text-slate-500">
+                        * دکاندار کی طرف سے سپلائرز کو دی جانے والی ادائیگیاں
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-start border-collapse text-sm">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-600 uppercase tracking-wider text-start">
+                                    <th class="p-3 text-start" data-i18n="th_s_company">کمپنی / سپلائر</th>
+                                    <th class="p-3 text-start" data-i18n="th_s_dealer">ڈیلر / رابطہ</th>
+                                    <th class="p-3 text-start" data-i18n="th_s_items">مال کی تفصیل</th>
+                                    <th class="p-3 text-start" data-i18n="th_s_total_bill">کل بل رقم</th>
+                                    <th class="p-3 text-start" data-i18n="th_s_paid">ادا شدہ رقم</th>
+                                    <th class="p-3 text-start" data-i18n="th_s_remaining">باقی جو دینا ہے</th>
+                                    <th class="p-3 text-start" data-i18n="th_s_last_date">آخری ادائیگی</th>
+                                    <th class="p-3 text-start" data-i18n="th_action">عمل</th>
+                                </tr>
+                            </thead>
+                            <tbody id="khata-suppliers-tbody" class="divide-y divide-slate-100">
+                                <!-- Populated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 5: Payroll                             -->
+        <!-- ========================================== -->
+        <div id="section-payroll" class="hidden space-y-6">
+            <!-- Header Bar -->
+            <div class="flex flex-wrap justify-between items-center gap-3 bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+                <h3 class="font-bold text-lg text-brand-800" data-i18n="pay_title">👥 ملازمین کی تنخواہوں کا نظام</h3>
+                <button onclick="openAddEmployeeModal()" class="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition shadow-sm flex items-center gap-1.5" data-i18n="add_new_emp">
+                    <span>+</span>
+                    <span>نیا ملازم شامل کریں</span>
+                </button>
+            </div>
+
+            <!-- Payroll Metric Pills -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider" data-i18n="stat_staff_count">کل ملازمین</p>
+                    <h4 id="stat-payroll-count" class="text-2xl font-bold text-slate-800 mt-1">0</h4>
+                </div>
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider" data-i18n="stat_total_salaries">کل ماہانہ بجٹ</p>
+                    <h4 id="stat-payroll-total" class="text-2xl font-bold text-slate-800 mt-1">Rs. 0</h4>
+                </div>
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-emerald-200 bg-emerald-50/40">
+                    <p class="text-xs font-semibold text-brand-700 uppercase tracking-wider" data-i18n="stat_paid_salaries">ادا شدہ رقم</p>
+                    <h4 id="stat-payroll-paid" class="text-2xl font-bold text-brand-700 mt-1">Rs. 0</h4>
+                </div>
+            </div>
+
+            <!-- Payroll Table -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-start border-collapse text-sm">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-600 uppercase tracking-wider text-start">
+                                <th class="p-3 text-start" data-i18n="th_emp_name">ملازم کا نام</th>
+                                <th class="p-3 text-start" data-i18n="th_emp_role">عہدہ</th>
+                                <th class="p-3 text-start" data-i18n="th_emp_phone">فون نمبر</th>
+                                <th class="p-3 text-start" data-i18n="th_emp_salary">ماہانہ تنخواہ</th>
+                                <th class="p-3 text-start" data-i18n="th_emp_status">تنخواہ کی حیثیت</th>
+                                <th class="p-3 text-start" data-i18n="th_action">عمل</th>
+                            </tr>
+                        </thead>
+                        <tbody id="payroll-table-body" class="divide-y divide-slate-100">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t py-4 text-center text-xs text-slate-500 mt-auto">
+        <p id="footer-text">پاک کریانہ اینڈ جنرل سٹور © 2026 | جملہ حقوق محفوظ ہیں | اونر: دانیال احمد (0301-4210508)</p>
+    </footer>
+
+    <!-- ========================================== -->
+    <!-- MODALS & OVERLAYS                          -->
+    <!-- ========================================== -->
+
+    <!-- 1. Receipt Modal -->
+    <div id="receipt-modal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl p-6 max-w-sm w-full space-y-4 shadow-2xl relative border">
+
+            <div id="receipt-printable" class="space-y-3">
+                <div class="text-center border-b border-dashed border-slate-300 pb-3">
+                    <h3 class="font-bold text-xl text-slate-900 calligraphy-title" id="r-store-title">پاک کریانہ اینڈ جنرل سٹور</h3>
+                    <p class="text-[11px] text-slate-500 font-medium mt-0.5" id="r-store-owner">اونر: دانیال احمد | فون: 0301-4210508</p>
+                    <div class="flex justify-between text-[10px] text-slate-400 mt-1 font-mono">
+                        <span id="receipt-invoice-no">INV-0000</span>
+                        <span id="receipt-datetime">--</span>
+                    </div>
+                    <div id="receipt-customer-display" class="text-[11px] font-medium text-slate-700 mt-1 hidden">
+                        <span data-i18n="r_customer_label">گاہک:</span> <span id="r-cust-name">--</span>
+                    </div>
+                </div>
+
+                <!-- Receipt Items -->
+                <div class="text-xs space-y-1 max-h-56 overflow-y-auto divide-y divide-dashed divide-slate-200" id="receipt-items-print">
+                    <!-- Dynamic -->
+                </div>
+
+                <!-- Totals -->
+                <div class="border-t border-dashed border-slate-300 pt-2 space-y-1 text-xs">
+                    <div class="flex justify-between text-slate-600">
+                        <span data-i18n="r_subtotal">سب ٹوٹل:</span>
+                        <span id="receipt-subtotal-amount">Rs. 0</span>
+                    </div>
+                    <div id="receipt-discount-row" class="flex justify-between text-rose-600 hidden">
+                        <span data-i18n="r_discount">رعایت:</span>
+                        <span id="receipt-discount-amount">Rs. 0</span>
+                    </div>
+                    <div class="flex justify-between font-bold text-sm text-brand-800 pt-1 border-t border-slate-200">
+                        <span data-i18n="r_grand_total">کل رقم (Total):</span>
+                        <span id="receipt-total-amount">Rs. 0</span>
+                    </div>
+                    <div class="flex justify-between text-[11px] text-slate-500 pt-1">
+                        <span data-i18n="r_pay_mode">طریقہ ادائیگی:</span>
+                        <span id="receipt-pay-mode-text" class="font-semibold text-slate-700">Cash</span>
+                    </div>
+                </div>
+
+                <div class="text-center text-[11px] text-slate-500 border-t border-dashed border-slate-200 pt-2 font-medium" id="r-footer-msg" data-i18n="r_thank_you">
+                    شکریہ! آپ کے تعاون کا شکریہ۔ دوبارہ تشریف لائیں۔
+                </div>
+            </div>
+
+            <!-- Modal Action Buttons (no-print) -->
+            <div class="no-print flex flex-col gap-2 pt-2 border-t border-slate-100">
+                <div class="flex gap-2">
+                    <button onclick="printReceipt()" class="flex-1 bg-slate-900 hover:bg-black text-white py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition">
+                        <span>🖨️</span>
+                        <span data-i18n="btn_print">پرنٹ رسید</span>
+                    </button>
+                    <button onclick="shareWhatsApp()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition">
+                        <span>📲</span>
+                        <span data-i18n="btn_whatsapp">واٹس ایپ</span>
+                    </button>
+                </div>
+                <button onclick="closeReceiptModal()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 rounded-xl text-xs font-medium transition" data-i18n="btn_close">
+                    بند کریں
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Add / Edit Product Modal -->
+    <div id="product-modal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl p-6 max-w-md w-full space-y-4 shadow-2xl border">
+            <h3 class="font-bold text-lg text-brand-800" id="prod-modal-title" data-i18n="modal_prod_title">نئی پروڈکٹ شامل کریں</h3>
+            <input type="hidden" id="m-edit-id" value="">
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-slate-600" data-i18n="lbl_m_barcode">بارکوڈ (Barcode / SKU):</label>
+                    <input type="text" id="m-barcode" placeholder="1011 یا سکین کریں" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-slate-600" data-i18n="lbl_m_name">پروڈکٹ کا نام:</label>
+                    <input type="text" id="m-name" placeholder="مثلاً: حبیب آئل 1 لیٹر" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-slate-600" data-i18n="lbl_m_cat">کیٹگری (Category):</label>
+                    <select id="m-cat" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500">
+                        <option value="ration">راشن (Ration)</option>
+                        <option value="tea_milk">دودھ و چائے (Tea & Milk)</option>
+                        <option value="clean">صابن و سرف (Soap & Detergents)</option>
+                        <option value="other">دیگر (Other)</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-xs font-semibold mb-1 text-slate-600" data-i18n="lbl_m_cost">خرید قیمت (Cost Rs.):</label>
+                        <input type="number" id="m-cost" placeholder="0" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1 text-slate-600" data-i18n="lbl_m_price">فروخت قیمت (Sale Rs.):</label>
+                        <input type="number" id="m-price" placeholder="0" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-slate-600" data-i18n="lbl_m_stock">ابتدائی سٹاک کی مقدار:</label>
+                    <input type="number" id="m-stock" placeholder="50" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+                <button onclick="closeAddProductModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-sm transition" data-i18n="btn_cancel">منسوخ</button>
+                <button onclick="saveProductForm()" class="bg-brand-600 hover:bg-brand-700 text-white px-5 py-2 rounded-xl text-sm font-medium transition shadow-sm" data-i18n="btn_save">محفوظ کریں</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Add / Edit Employee Modal -->
+    <div id="employee-modal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl p-6 max-w-md w-full space-y-4 shadow-2xl border">
+            <h3 class="font-bold text-lg text-brand-800" id="emp-modal-title" data-i18n="add_new_emp">نیا ملازم شامل کریں</h3>
+            <input type="hidden" id="e-edit-id" value="">
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-slate-600" data-i18n="lbl_e_name">ملازم کا نام:</label>
+                    <input type="text" id="e-name" placeholder="مثلاً: شاہد خان" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-slate-600" data-i18n="lbl_e_role">عہدہ (Role):</label>
+                    <input type="text" id="e-role" value="سیلز مین" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-slate-600" data-i18n="lbl_e_phone">فون نمبر:</label>
+                    <input type="text" id="e-phone" placeholder="0300-1234567" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-slate-600" data-i18n="lbl_e_salary">ماہانہ تنخواہ (Rs.):</label>
+                    <input type="number" id="e-salary" placeholder="30000" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+                <button onclick="closeAddEmployeeModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-sm transition" data-i18n="btn_cancel">منسوخ</button>
+                <button onclick="saveEmployeeForm()" class="bg-brand-600 hover:bg-brand-700 text-white px-5 py-2 rounded-xl text-sm font-medium transition shadow-sm" data-i18n="btn_save">محفوظ کریں</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. KHATA MODAL: Receive Payment From Customer (قرض دار کا قرضہ وصول کرنا) -->
+    <div id="modal-receive-debt" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl p-6 max-w-md w-full space-y-4 shadow-2xl border">
+            <div class="flex items-center gap-2 border-b pb-3 text-emerald-800">
+                <span class="text-2xl">💵</span>
+                <div>
+                    <h3 class="font-bold text-lg" data-i18n="modal_recv_title">گاہک سے قرضہ وصول کریں</h3>
+                    <p class="text-xs text-slate-500" data-i18n="modal_recv_desc">ادھار کھاتے میں وصولی کا اندراج کریں</p>
+                </div>
+            </div>
+
+            <input type="hidden" id="recv-cust-id">
+            
+            <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-3 space-y-1">
+                <div class="flex justify-between text-xs text-slate-600">
+                    <span data-i18n="lbl_cust_name_txt">گاہک کا نام:</span>
+                    <span id="recv-cust-name-disp" class="font-bold text-slate-800 text-sm">--</span>
+                </div>
+                <div class="flex justify-between text-xs text-slate-600">
+                    <span data-i18n="lbl_cust_phone_txt">فون نمبر:</span>
+                    <span id="recv-cust-phone-disp" class="font-mono text-slate-700">--</span>
+                </div>
+                <div class="flex justify-between text-xs pt-1 border-t border-emerald-200/60 font-semibold">
+                    <span data-i18n="lbl_current_debt">موجودہ باقی ادھار:</span>
+                    <span id="recv-cust-debt-disp" class="text-rose-600 font-bold text-base">Rs. 0</span>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-slate-700" data-i18n="lbl_recv_amount">وصول کی جانے والی رقم (Rs.):</label>
+                    <input type="number" id="recv-amount" min="1" placeholder="مثلاً: 2000" class="w-full border-2 border-emerald-400 rounded-xl px-3 py-2 text-base font-bold text-emerald-800 outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-slate-600" data-i18n="lbl_recv_method">وصولی کا طریقہ:</label>
+                    <select id="recv-method" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm outline-none">
+                        <option value="Cash">نقد (Cash)</option>
+                        <option value="EasyPaisa">ایزی پیسہ (EasyPaisa)</option>
+                        <option value="JazzCash">جاز کیش (JazzCash)</option>
+                        <option value="Bank">بینک ٹرانسفر (Bank)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-slate-600" data-i18n="lbl_recv_notes">نوٹ / تفصیل (اختیاری):</label>
+                    <input type="text" id="recv-notes" placeholder="مثلاً: ماہانہ قسط وصولی" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm outline-none">
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+                <button onclick="closeReceiveDebtModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-sm transition" data-i18n="btn_cancel">منسوخ</button>
+                <button onclick="saveReceiveDebt()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-sm font-bold transition shadow-sm flex items-center gap-1.5" data-i18n="btn_save_recv">
+                    <span>✅</span>
+                    <span>وصولی درج کریں</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. KHATA MODAL: Pay Debt To Supplier (دکاندار نے سپلائر کو قرضہ دینا ہے) -->
+    <div id="modal-pay-debt" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl p-6 max-w-md w-full space-y-4 shadow-2xl border">
+            <div class="flex items-center gap-2 border-b pb-3 text-rose-800">
+                <span class="text-2xl">💸</span>
+                <div>
+                    <h3 class="font-bold text-lg" data-i18n="modal_pay_title">سپلائر کو قرضہ ادا کریں</h3>
+                    <p class="text-xs text-slate-500" data-i18n="modal_pay_desc">کمپنی یا ڈیلر کو ادائیگی کا اندراج کریں</p>
+                </div>
+            </div>
+
+            <input type="hidden" id="pay-supp-id">
+            
+            <div class="bg-rose-50 border border-rose-200 rounded-2xl p-3 space-y-1">
+                <div class="flex justify-between text-xs text-slate-600">
+                    <span data-i18n="lbl_supp_company_txt">سپلائر / کمپنی:</span>
+                    <span id="pay-supp-company-disp" class="font-bold text-slate-800 text-sm">--</span>
+                </div>
+                <div class="flex justify-between text-xs text-slate-600">
+                    <span data-i18n="lbl_supp_dealer_txt">ڈیلر کا نام:</span>
+                    <span id="pay-supp-dealer-disp" class="text-slate-700">--</span>
+                </div>
+                <div class="flex justify-between text-xs pt-1 border-t border-rose-200/60 font-semibold">
+                    <span data-i18n="lbl_current_payable">کل واجب الادا رقم:</span>
+                    <span id="pay-supp-debt-disp" class="text-rose-700 font-bold text-base">Rs. 0</span>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-slate-700" data-i18n="lbl_pay_amount">ادا کی جانے والی رقم (Rs.):</label>
+                    <input type="number" id="pay-amount" min="1" placeholder="مثلاً: 10000" class="w-full border-2 border-rose-400 rounded-xl px-3 py-2 text-base font-bold text-rose-800 outline-none focus:ring-2 focus:ring-rose-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-slate-600" data-i18n="lbl_pay_method">ادائیگی کا طریقہ:</label>
+                    <select id="pay-method" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm outline-none">
+                        <option value="Cash">نقد (Cash)</option>
+                        <option value="Bank">بینک چیک / ٹرانسفر (Bank/Cheque)</option>
+                        <option value="EasyPaisa">ایزی پیسہ (EasyPaisa)</option>
+                        <option value="JazzCash">جاز کیش (JazzCash)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-slate-600" data-i18n="lbl_pay_notes">نوٹ / چیک نمبر / بل رسید:</label>
+                    <input type="text" id="pay-notes" placeholder="مثلاً: بل نمبر 442 کے عوض ادائیگی" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm outline-none">
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+                <button onclick="closePayDebtModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-sm transition" data-i18n="btn_cancel">منسوخ</button>
+                <button onclick="savePayDebt()" class="bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 rounded-xl text-sm font-bold transition shadow-sm flex items-center gap-1.5" data-i18n="btn_save_pay">
+                    <span>✅</span>
+                    <span>ادائیگی محفوظ کریں</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. KHATA MODAL: Add New Customer Debtor (+ نیا گاہک کھاتہ) -->
+    <div id="modal-add-customer-debt" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl p-6 max-w-md w-full space-y-4 shadow-2xl border">
+            <h3 class="font-bold text-lg text-emerald-800 flex items-center gap-2" data-i18n="modal_add_cust_title">
+                <span>📥</span>
+                <span>نیا گاہک کھاتہ دار شامل کریں</span>
+            </h3>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-slate-600" data-i18n="lbl_add_c_name">گاہک کا نام:</label>
+                    <input type="text" id="add-c-name" placeholder="مثلاً: حاجی سلیم اختر" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-slate-600" data-i18n="lbl_add_c_phone">فون نمبر (واٹس ایپ):</label>
+                    <input type="text" id="add-c-phone" placeholder="0300-1234567" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-slate-600" data-i18n="lbl_add_c_address">گھر کا پتہ / گلی محلہ:</label>
+                    <input type="text" id="add-c-address" placeholder="مثلاً: گلی نمبر 4، مدینہ ٹاؤن" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-slate-600" data-i18n="lbl_add_c_amount">ابتدائی ادھار رقم (Rs.):</label>
+                    <input type="number" id="add-c-amount" placeholder="0" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+                <button onclick="closeAddCustomerDebtModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-sm transition" data-i18n="btn_cancel">منسوخ</button>
+                <button onclick="saveNewCustomerDebt()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-sm font-medium transition shadow-sm" data-i18n="btn_save">محفوظ کریں</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 7. KHATA MODAL: Add New Supplier Payable (+ نیا سپلائر کھاتہ) -->
+    <div id="modal-add-supplier-debt" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl p-6 max-w-md w-full space-y-4 shadow-2xl border">
+            <h3 class="font-bold text-lg text-rose-800 flex items-center gap-2" data-i18n="modal_add_supp_title">
+                <span>📤</span>
+                <span>نیا سپلائر کھاتہ شامل کریں (قرضہ دینا ہے)</span>
+            </h3>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-slate-600" data-i18n="lbl_add_s_company">کمپنی یا ایجنسی کا نام:</label>
+                    <input type="text" id="add-s-company" placeholder="مثلاً: صوفی گھی ملز" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-rose-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-slate-600" data-i18n="lbl_add_s_dealer">ڈیلر / سپلائر کا نام و رابطہ:</label>
+                    <input type="text" id="add-s-dealer" placeholder="مثلاً: اسد علی (0321-7766554)" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-rose-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-slate-600" data-i18n="lbl_add_s_items">مال / سامان کی تفصیل:</label>
+                    <input type="text" id="add-s-items" placeholder="مثلاً: گھی پیٹیاں 20 عدد" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-rose-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-slate-600" data-i18n="lbl_add_s_amount">کل بل رقم جو دینی ہے (Rs.):</label>
+                    <input type="number" id="add-s-amount" placeholder="0" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-rose-500">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+                <button onclick="closeAddSupplierDebtModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-sm transition" data-i18n="btn_cancel">منسوخ</button>
+                <button onclick="saveNewSupplierDebt()" class="bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 rounded-xl text-sm font-medium transition shadow-sm" data-i18n="btn_save">محفوظ کریں</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-5 end-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- ========================================== -->
+    <!-- JAVASCRIPT LOGIC                           -->
+    <!-- ========================================== -->
+    <script>
+        // Language Dictionary (100% Comprehensive Coverage including Khata)
+        const langData = {
+            ur: {
+                store_title: "پاک کریانہ اینڈ جنرل سٹور",
+                store_owner: "اونر: دانیال احمد • رابطہ: 0301-4210508",
+                footer_text: "پاک کریانہ اینڈ جنرل سٹور © 2026 | جملہ حقوق محفوظ ہیں | اونر: دانیال احمد (0301-4210508)",
+                backup_btn: "بیک اپ",
+                restore_btn: "بحال کریں",
+                tab_pos: "🛒 بلنگ (POS)",
+                tab_inventory: "📦 گودام / سٹاک",
+                tab_sales: "📊 فروخت اور منافع",
+                tab_khata: "📒 ادھار و کھاتہ بک",
+                tab_payroll: "👥 ملازمین تنخواہیں",
+                scan_label: "بارکوڈ سکین کریں یا نام سے تلاش کریں:",
+                add_btn: "شامل کریں",
+                quick_items: "⚡ فوری اشیاء (Quick Catalog)",
+                cat_all: "سب",
+                cat_ration: "راشن",
+                cat_tea_milk: "دودھ و چائے",
+                cat_clean: "صابن و سرف",
+                cart_title: "موجودہ بل (Current Cart)",
+                clear_cart_btn: "کارٹ خالی کریں",
+                lbl_cust_name: "گاہک کا نام (اختیاری):",
+                lbl_cust_phone: "واٹس ایپ نمبر:",
+                empty_cart: "کارٹ خالی ہے...",
+                lbl_subtotal: "سب ٹوٹل:",
+                lbl_discount: "رعایت (Discount Rs.):",
+                lbl_payment_mode: "ادائیگی کا طریقہ:",
+                lbl_cash_received: "وصول شدہ رقم:",
+                lbl_change_due: "بقایا (Change Due):",
+                total_amount: "کل واجب الادا:",
+                checkout_btn: "بل مکمل کریں اور رسید بنائیں",
+                inv_title: "📦 گودام اور سٹاک کا ریکارڈ",
+                add_new_prod: "+ نئی پروڈکٹ شامل کریں",
+                stat_total_items: "کل پروڈکٹس",
+                stat_low_stock: "کم سٹاک وارننگ (5 یا کم)",
+                stat_stock_val: "کل مالیت (خرید قیمت پر)",
+                th_barcode: "بارکوڈ",
+                th_name: "پروڈکٹ کا نام",
+                th_cost: "خرید قیمت",
+                th_price: "فروخت قیمت",
+                th_margin: "منافع فی یونٹ",
+                th_stock: "کل خریدی",
+                th_sold: "فروخت شدہ",
+                th_remaining: "باقی سٹاک",
+                th_action: "عمل",
+                stat_sales: "کل فروخت (Total Revenue)",
+                stat_profit: "کل منافع (Net Profit)",
+                stat_bills: "کل بلز (Total Invoices)",
+                stat_items_sold: "کل آئٹمز فروخت",
+                sales_auto_saved: "* تمام فروخت تاریخ کے مطابق محفوظ ہیں",
+                th_invoice: "بل نمبر",
+                th_date: "تاریخ و وقت",
+                th_customer: "گاہک",
+                th_pay_method: "طریقہ ادائیگی",
+                th_item_count: "اشیاء",
+                th_grand_total: "کل رقم",
+                th_sale_profit: "منافع",
+                pay_title: "👥 ملازمین کی تنخواہوں کا نظام",
+                add_new_emp: "+ نیا ملازم شامل کریں",
+                stat_staff_count: "کل ملازمین",
+                stat_total_salaries: "کل ماہانہ بجٹ",
+                stat_paid_salaries: "ادا شدہ رقم",
+                th_emp_name: "ملازم کا نام",
+                th_emp_role: "عہدہ",
+                th_emp_phone: "فون نمبر",
+                th_emp_salary: "ماہانہ تنخواہ",
+                th_emp_status: "تنخواہ کی حیثیت",
+                modal_prod_title: "نئی پروڈکٹ شامل کریں",
+                lbl_m_barcode: "بارکوڈ (Barcode / SKU):",
+                lbl_m_name: "پروڈکٹ کا نام:",
+                lbl_m_cat: "کیٹگری (Category):",
+                lbl_m_cost: "خرید قیمت (Cost Rs.):",
+                lbl_m_price: "فروخت قیمت (Sale Rs.):",
+                lbl_m_stock: "ابتدائی سٹاک کی مقدار:",
+                lbl_e_name: "ملازم کا نام:",
+                lbl_e_role: "عہدہ (Role):",
+                lbl_e_phone: "فون نمبر:",
+                lbl_e_salary: "ماہانہ تنخواہ (Rs.):",
+                btn_cancel: "منسوخ",
+                btn_save: "محفوظ کریں",
+                btn_print: "پرنٹ رسید",
+                btn_whatsapp: "واٹس ایپ",
+                btn_close: "بند کریں",
+                r_customer_label: "گاہک:",
+                r_subtotal: "سب ٹوٹل:",
+                r_discount: "رعایت:",
+                r_grand_total: "کل رقم (Total):",
+                r_pay_mode: "طریقہ ادائیگی:",
+                r_thank_you: "شکریہ! آپ کے تعاون کا شکریہ۔ دوبارہ تشریف لائیں!",
+                sound_on: "آواز فعال",
+                sound_off: "آواز بند",
+                
+                // Khata specific i18n
+                stat_khata_receivable: "گاہکوں کا ادھار (وصول کرنا ہے)",
+                stat_khata_payable: "سپلائرز کا ادھار (دکاندار نے دینا ہے)",
+                stat_khata_net: "خالص کھاتہ پوزیشن (Net Balance)",
+                stat_khata_total_accounts: "کل کھاتے (Accounts)",
+                stat_khata_active: "فعال کھاتہ داران",
+                khata_subtab_customers: "گاہکوں کا ادھار (قرضہ وصول کرنا ہے)",
+                khata_subtab_suppliers: "سپلائرز کا قرضہ (دکاندار نے دینا ہے)",
+                btn_add_cust_debt: "+ نیا گاہک کھاتہ شامل کریں",
+                btn_add_supp_debt: "+ نیا سپلائر کھاتہ شامل کریں",
+                th_k_name: "گاہک کا نام",
+                th_k_phone: "فون نمبر",
+                th_k_address: "پتہ / علاقہ",
+                th_k_total_credit: "کل ادھار",
+                th_k_received: "وصول شدہ",
+                th_k_remaining: "باقی قرضہ",
+                th_k_last_date: "آخری تاریخ",
+                th_s_company: "کمپنی / سپلائر",
+                th_s_dealer: "ڈیلر / رابطہ",
+                th_s_items: "مال کی تفصیل",
+                th_s_total_bill: "کل بل رقم",
+                th_s_paid: "ادا شدہ رقم",
+                th_s_remaining: "باقی جو دینا ہے",
+                th_s_last_date: "آخری ادائیگی",
+                modal_recv_title: "گاہک سے قرضہ وصول کریں",
+                modal_recv_desc: "ادھار کھاتے میں وصولی کا اندراج کریں",
+                lbl_cust_name_txt: "گاہک کا نام:",
+                lbl_cust_phone_txt: "فون نمبر:",
+                lbl_current_debt: "موجودہ باقی ادھار:",
+                lbl_recv_amount: "وصول کی جانے والی رقم (Rs.):",
+                lbl_recv_method: "وصولی کا طریقہ:",
+                lbl_recv_notes: "نوٹ / تفصیل (اختیاری):",
+                btn_save_recv: "وصولی درج کریں",
+                modal_pay_title: "سپلائر کو قرضہ ادا کریں",
+                modal_pay_desc: "کمپنی یا ڈیلر کو ادائیگی کا اندراج کریں",
+                lbl_supp_company_txt: "سپلائر / کمپنی:",
+                lbl_supp_dealer_txt: "ڈیلر کا نام:",
+                lbl_current_payable: "کل واجب الادا رقم:",
+                lbl_pay_amount: "ادا کی جانے والی رقم (Rs.):",
+                lbl_pay_method: "ادائیگی کا طریقہ:",
+                lbl_pay_notes: "نوٹ / چیک نمبر / بل رسید:",
+                btn_save_pay: "ادائیگی محفوظ کریں",
+                modal_add_cust_title: "نیا گاہک کھاتہ دار شامل کریں",
+                lbl_add_c_name: "گاہک کا نام:",
+                lbl_add_c_phone: "فون نمبر (واٹس ایپ):",
+                lbl_add_c_address: "گھر کا پتہ / گلی محلہ:",
+                lbl_add_c_amount: "ابتدائی ادھار رقم (Rs.):",
+                modal_add_supp_title: "نیا سپلائر کھاتہ شامل کریں (قرضہ دینا ہے)",
+                lbl_add_s_company: "کمپنی یا ایجنسی کا نام:",
+                lbl_add_s_dealer: "ڈیلر / سپلائر کا نام و رابطہ:",
+                lbl_add_s_items: "مال / سامان کی تفصیل:",
+                lbl_add_s_amount: "کل بل رقم جو دینی ہے (Rs.):"
+            },
+            en: {
+                store_title: "Pak Karyana & General Store",
+                store_owner: "Owner: Danial Ahmad • WhatsApp: 0301-4210508",
+                footer_text: "Pak Karyana & General Store © 2026 | All Rights Reserved | Owner: Danial Ahmad (0301-4210508)",
+                backup_btn: "Backup",
+                restore_btn: "Restore",
+                tab_pos: "🛒 POS Billing",
+                tab_inventory: "📦 Inventory",
+                tab_sales: "📊 Sales & Profit",
+                tab_khata: "📒 Khata & Credit Ledger",
+                tab_payroll: "👥 Staff Payroll",
+                scan_label: "Scan Barcode or Search by Name:",
+                add_btn: "Add",
+                quick_items: "⚡ Quick Catalog",
+                cat_all: "All",
+                cat_ration: "Ration",
+                cat_tea_milk: "Tea & Milk",
+                cat_clean: "Detergent & Soap",
+                cart_title: "Current Cart",
+                clear_cart_btn: "Clear Cart",
+                lbl_cust_name: "Customer Name (Optional):",
+                lbl_cust_phone: "WhatsApp Number:",
+                empty_cart: "Cart is empty...",
+                lbl_subtotal: "Subtotal:",
+                lbl_discount: "Discount (Rs.):",
+                lbl_payment_mode: "Payment Method:",
+                lbl_cash_received: "Cash Received:",
+                lbl_change_due: "Change Due:",
+                total_amount: "Grand Total:",
+                checkout_btn: "Complete Sale & Print Receipt",
+                inv_title: "📦 Warehouse & Inventory Record",
+                add_new_prod: "+ Add New Product",
+                stat_total_items: "Total Products",
+                stat_low_stock: "Low Stock Alert (<= 5)",
+                stat_stock_val: "Total Stock Value (Cost)",
+                th_barcode: "Barcode",
+                th_name: "Product Name",
+                th_cost: "Cost Price",
+                th_price: "Selling Price",
+                th_margin: "Unit Profit",
+                th_stock: "Total Stock",
+                th_sold: "Sold",
+                th_remaining: "Remaining",
+                th_action: "Action",
+                stat_sales: "Total Revenue",
+                stat_profit: "Net Profit",
+                stat_bills: "Total Invoices",
+                stat_items_sold: "Total Items Sold",
+                sales_auto_saved: "* All sales recorded chronologically",
+                th_invoice: "Invoice #",
+                th_date: "Date & Time",
+                th_customer: "Customer",
+                th_pay_method: "Payment Method",
+                th_item_count: "Items",
+                th_grand_total: "Grand Total",
+                th_sale_profit: "Profit",
+                pay_title: "👥 Employee Payroll System",
+                add_new_emp: "+ Add New Employee",
+                stat_staff_count: "Total Staff",
+                stat_total_salaries: "Monthly Budget",
+                stat_paid_salaries: "Paid Amount",
+                th_emp_name: "Employee Name",
+                th_emp_role: "Role",
+                th_emp_phone: "Phone Number",
+                th_emp_salary: "Monthly Salary",
+                th_emp_status: "Salary Status",
+                modal_prod_title: "Add New Product",
+                lbl_m_barcode: "Barcode / SKU:",
+                lbl_m_name: "Product Name:",
+                lbl_m_cat: "Category:",
+                lbl_m_cost: "Cost Price (Rs.):",
+                lbl_m_price: "Sale Price (Rs.):",
+                lbl_m_stock: "Initial Stock Qty:",
+                lbl_e_name: "Employee Name:",
+                lbl_e_role: "Role:",
+                lbl_e_phone: "Phone Number:",
+                lbl_e_salary: "Monthly Salary (Rs.):",
+                btn_cancel: "Cancel",
+                btn_save: "Save",
+                btn_print: "Print Receipt",
+                btn_whatsapp: "WhatsApp",
+                btn_close: "Close",
+                r_customer_label: "Customer:",
+                r_subtotal: "Subtotal:",
+                r_discount: "Discount:",
+                r_grand_total: "Grand Total:",
+                r_pay_mode: "Payment Method:",
+                r_thank_you: "Thank you for your visit! Please come again.",
+                sound_on: "Sound On",
+                sound_off: "Sound Off",
+                
+                // Khata specific i18n
+                stat_khata_receivable: "Customer Debts (Receivable)",
+                stat_khata_payable: "Supplier Debts (Payable)",
+                stat_khata_net: "Net Khata Balance",
+                stat_khata_total_accounts: "Total Accounts",
+                stat_khata_active: "Active Ledgers",
+                khata_subtab_customers: "Customer Debts (To Receive)",
+                khata_subtab_suppliers: "Supplier Debts (Store Owes)",
+                btn_add_cust_debt: "+ Add Customer Account",
+                btn_add_supp_debt: "+ Add Supplier Account",
+                th_k_name: "Customer Name",
+                th_k_phone: "Phone Number",
+                th_k_address: "Address / Area",
+                th_k_total_credit: "Total Credit",
+                th_k_received: "Received",
+                th_k_remaining: "Remaining Debt",
+                th_k_last_date: "Last Date",
+                th_s_company: "Company / Supplier",
+                th_s_dealer: "Dealer / Contact",
+                th_s_items: "Goods Details",
+                th_s_total_bill: "Total Bill Amount",
+                th_s_paid: "Amount Paid",
+                th_s_remaining: "Amount Store Owes",
+                th_s_last_date: "Last Payment",
+                modal_recv_title: "Receive Debt From Customer",
+                modal_recv_desc: "Record receipt in customer credit ledger",
+                lbl_cust_name_txt: "Customer Name:",
+                lbl_cust_phone_txt: "Phone Number:",
+                lbl_current_debt: "Current Remaining Debt:",
+                lbl_recv_amount: "Amount to Receive (Rs.):",
+                lbl_recv_method: "Payment Method:",
+                lbl_recv_notes: "Notes / Description (Optional):",
+                btn_save_recv: "Record Receipt",
+                modal_pay_title: "Pay Debt To Supplier",
+                modal_pay_desc: "Record payment to company or vendor",
+                lbl_supp_company_txt: "Supplier / Company:",
+                lbl_supp_dealer_txt: "Dealer Name:",
+                lbl_current_payable: "Total Payable Amount:",
+                lbl_pay_amount: "Amount to Pay (Rs.):",
+                lbl_pay_method: "Payment Method:",
+                lbl_pay_notes: "Notes / Cheque / Bill #:",
+                btn_save_pay: "Record Payment",
+                modal_add_cust_title: "Add New Customer Account",
+                lbl_add_c_name: "Customer Name:",
+                lbl_add_c_phone: "Phone (WhatsApp):",
+                lbl_add_c_address: "Home Address / Street:",
+                lbl_add_c_amount: "Initial Debt Amount (Rs.):",
+                modal_add_supp_title: "Add New Supplier Account (Debt Owed)",
+                lbl_add_s_company: "Company / Agency Name:",
+                lbl_add_s_dealer: "Dealer Name & Contact:",
+                lbl_add_s_items: "Goods / Supplies Description:",
+                lbl_add_s_amount: "Total Bill Amount Owed (Rs.):"
+            }
+        };
+
+        // Load saved language or default to 'ur'
+        let currentLang = localStorage.getItem('pak_lang') || 'ur';
+        let soundEnabled = true;
+        let selectedCategory = 'all';
+        let currentKhataSubTab = 'customers'; // 'customers' or 'suppliers'
+
+        // Sound Synthesizer (AudioContext, zero external dependencies)
+        function playBeep(type = 'success') {
+            if(!soundEnabled) return;
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                if(type === 'success') {
+                    osc.frequency.setValueAtTime(1400, ctx.currentTime);
+                    gain.gain.setValueAtTime(0.12, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.1);
+                } else if(type === 'alert') {
+                    osc.frequency.setValueAtTime(400, ctx.currentTime);
+                    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.25);
+                }
+            } catch(e) {
+                // AudioContext not allowed or unsupported
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            document.getElementById('sound-icon').innerText = soundEnabled ? '🔊' : '🔇';
+            document.getElementById('sound-text').innerText = soundEnabled ? langData[currentLang].sound_on : langData[currentLang].sound_off;
+            showToast(soundEnabled ? (currentLang === 'ur' ? 'آواز فعال ہے' : 'Sound is On') : (currentLang === 'ur' ? 'آواز بند کر دی گئی' : 'Sound is Off'), 'info');
+        }
+
+        // Toast Notifications
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const colors = {
+                success: 'bg-emerald-800 text-white border-emerald-600',
+                alert: 'bg-rose-800 text-white border-rose-600',
+                info: 'bg-slate-800 text-white border-slate-600'
+            };
+            toast.className = `${colors[type] || colors.info} border px-4 py-2.5 rounded-xl shadow-lg text-xs font-medium flex items-center gap-2 transform transition-all duration-300 translate-y-3 opacity-0`;
+            toast.innerHTML = `<span>${type === 'success' ? '✅' : type === 'alert' ? '⚠️' : 'ℹ️'}</span> <span>${message}</span>`;
+            container.appendChild(toast);
+
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-3', 'opacity-0');
+            });
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 2800);
+        }
+
+        // Initial Sample Products
+        const initialProducts = [
+            { id: '1001', name: 'آٹا (20kg Bag Atta)', cat: 'ration', cost: 2700, price: 2850, totalStock: 50, sold: 0 },
+            { id: '1002', name: 'ڈالڈا گھی / آئل (Dalda 1L)', cat: 'ration', cost: 510, price: 540, totalStock: 100, sold: 0 },
+            { id: '1003', name: 'چینی (Sugar 1kg)', cat: 'ration', cost: 135, price: 145, totalStock: 200, sold: 0 },
+            { id: '1004', name: 'باسمتی چاول (Basmati Rice 1kg)', cat: 'ration', cost: 290, price: 320, totalStock: 150, sold: 0 },
+            { id: '1005', name: 'دال چنا (Daal Chana 1kg)', cat: 'ration', cost: 260, price: 285, totalStock: 80, sold: 0 },
+            { id: '1006', name: 'ٹپال دانے دار چائے (Tapal Tea 950g)', cat: 'tea_milk', cost: 1480, price: 1580, totalStock: 40, sold: 0 },
+            { id: '1007', name: 'اولپرز دودھ (Olpers Milk 1L)', cat: 'tea_milk', cost: 275, price: 295, totalStock: 120, sold: 0 },
+            { id: '1008', name: 'لکس صابن (Lux Soap Large)', cat: 'clean', cost: 125, price: 140, totalStock: 90, sold: 0 },
+            { id: '1009', name: 'سرف ایکسل (Surf Excel 1kg)', cat: 'clean', cost: 560, price: 600, totalStock: 60, sold: 0 },
+            { id: '1010', name: 'نیشنل لال مرچ (Red Chilli 200g)', cat: 'ration', cost: 260, price: 290, totalStock: 75, sold: 0 }
+        ];
+
+        // Initial Customer Debtors (گاہک جن سے وصول کرنا ہے)
+        const initialCustomerKhata = [
+            { id: 101, name: 'حاجی محمد اسلم', phone: '0300-4567891', address: 'گلی نمبر 3، بالمقابل مدینہ مسجد', totalCredit: 14500, received: 8000, remainingDebt: 6500, lastDate: '2026-11-15' },
+            { id: 102, name: 'طارق محمود', phone: '0321-9876543', address: 'مین بازار، پاک کریانہ والی گلی', totalCredit: 9200, received: 4000, remainingDebt: 5200, lastDate: '2026-11-14' },
+            { id: 103, name: 'راشد علی', phone: '0303-1122334', address: 'نزد پرانی کچہری روڈ', totalCredit: 12000, received: 12000, remainingDebt: 0, lastDate: '2026-11-12' },
+            { id: 104, name: 'عثمان بشیر', phone: '0345-6677889', address: 'محلہ رحمان پورہ', totalCredit: 18900, received: 9000, remainingDebt: 9900, lastDate: '2026-11-16' }
+        ];
+
+        // Initial Supplier Creditors (سپلائرز جن کو دکاندار نے قرضہ دینا ہے)
+        const initialSupplierKhata = [
+            { id: 201, company: 'ڈالڈا گھی ایجنسی (حبیب ٹریڈرز)', dealer: 'اسلم بٹ', phone: '0300-7788991', items: 'ڈالڈا گھی و کوکنگ آئل 10 پیٹی', totalBill: 125000, paid: 85000, remainingPayable: 40000, lastDate: '2026-11-10' },
+            { id: 202, company: 'ٹپال ٹی ڈسٹری بیوٹرز', dealer: 'عامر ملک', phone: '0312-3344556', items: 'ٹپال دانے دار، مکسچر 5 کارٹن', totalBill: 65000, paid: 40000, remainingPayable: 25000, lastDate: '2026-11-08' },
+            { id: 203, company: 'صوفی رائس اینڈ فلور ملز', dealer: 'حاجی صوفی اکرم', phone: '0322-8899001', items: 'سپر کرنل چاول 10 بوری، آٹا 20 تگ', totalBill: 95000, paid: 75000, remainingPayable: 20000, lastDate: '2026-11-12' },
+            { id: 204, company: 'یونی لیور پاکستان ڈسٹری بیوشن', dealer: 'فرحان زبیر', phone: '0301-5566778', items: 'لکس صابن، سرف ایکسل، لائف بوائے', totalBill: 45000, paid: 45000, remainingPayable: 0, lastDate: '2026-11-05' }
+        ];
+
+        let products = JSON.parse(localStorage.getItem('pak_products')) || initialProducts;
+        let cart = [];
+        let salesHistory = JSON.parse(localStorage.getItem('pak_sales')) || [];
+        let employees = JSON.parse(localStorage.getItem('pak_employees')) || [
+            { id: 1, name: 'محمد علی', role: 'سیلز مین', phone: '0300-1122334', salary: 35000, paid: true },
+            { id: 2, name: 'احمد رضا', role: 'اسٹاک نگران', phone: '0302-9988776', salary: 30000, paid: false }
+        ];
+        let customerKhata = JSON.parse(localStorage.getItem('pak_customer_khata')) || initialCustomerKhata;
+        let supplierKhata = JSON.parse(localStorage.getItem('pak_supplier_khata')) || initialSupplierKhata;
+
+        function saveData() {
+            localStorage.setItem('pak_products', JSON.stringify(products));
+            localStorage.setItem('pak_sales', JSON.stringify(salesHistory));
+            localStorage.setItem('pak_employees', JSON.stringify(employees));
+            localStorage.setItem('pak_customer_khata', JSON.stringify(customerKhata));
+            localStorage.setItem('pak_supplier_khata', JSON.stringify(supplierKhata));
+        }
+
+        // Set Language Function
+        function setLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('pak_lang', lang);
+            applyLanguageSettings();
+        }
+
+        function applyLanguageSettings() {
+            const root = document.getElementById('html-root');
+            root.setAttribute('lang', currentLang);
+            root.setAttribute('dir', currentLang === 'ur' ? 'rtl' : 'ltr');
+            
+            // Update active pill style
+            const btnUr = document.getElementById('btn-lang-ur');
+            const btnEn = document.getElementById('btn-lang-en');
+
+            if(currentLang === 'ur') {
+                btnUr.className = "px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all duration-200 bg-brand-600 text-white shadow";
+                btnEn.className = "px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all duration-200 text-emerald-200 hover:text-white";
+            } else {
+                btnEn.className = "px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all duration-200 bg-brand-600 text-white shadow";
+                btnUr.className = "px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all duration-200 text-emerald-200 hover:text-white";
+            }
+
+            // Update static texts
+            document.getElementById('store-title').innerText = langData[currentLang].store_title;
+            document.getElementById('store-owner').innerHTML = currentLang === 'ur' 
+                ? `<span>اونر: دانیال احمد</span><span>•</span><span dir="ltr">0301-4210508</span>`
+                : `<span>Owner: Danial Ahmad</span><span>•</span><span dir="ltr">0301-4210508</span>`;
+
+            document.getElementById('r-store-title').innerText = langData[currentLang].store_title;
+            document.getElementById('r-store-owner').innerText = langData[currentLang].store_owner;
+            document.getElementById('footer-text').innerText = langData[currentLang].footer_text;
+            document.getElementById('sound-text').innerText = soundEnabled ? langData[currentLang].sound_on : langData[currentLang].sound_off;
+
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if(langData[currentLang][key]) el.innerText = langData[currentLang][key];
+            });
+
+            // Update inputs placeholder
+            document.getElementById('barcode-input').placeholder = currentLang === 'ur' ? 'بارکوڈ نمبر درج کریں یا سکین کریں...' : 'Enter barcode or search...';
+            document.getElementById('inventory-search').placeholder = currentLang === 'ur' ? 'پروڈکٹ نام یا بارکوڈ تلاش کریں...' : 'Search by name or barcode...';
+            document.getElementById('sales-search').placeholder = currentLang === 'ur' ? 'بل نمبر یا گاہک کا نام تلاش کریں...' : 'Search invoice or customer...';
+            document.getElementById('cart-customer-name').placeholder = currentLang === 'ur' ? 'مثلاً: محمد خان' : 'e.g. John Doe';
+            document.getElementById('khata-customer-search').placeholder = currentLang === 'ur' ? 'گاہک کا نام یا فون تلاش کریں...' : 'Search customer by name or phone...';
+            document.getElementById('khata-supplier-search').placeholder = currentLang === 'ur' ? 'سپلائر، کمپنی یا ڈیلر تلاش کریں...' : 'Search supplier or company...';
+
+            renderAll();
+        }
+
+        // Navigation Tabs
+        function switchTab(tabName) {
+            ['pos', 'inventory', 'sales', 'khata', 'payroll'].forEach(t => {
+                document.getElementById(`section-${t}`).classList.add('hidden');
+                document.getElementById(`tab-${t}`).className = "tab-btn px-4 py-2 rounded-xl font-medium text-slate-600 hover:bg-slate-100 whitespace-nowrap transition flex items-center gap-2";
+            });
+            document.getElementById(`section-${tabName}`).classList.remove('hidden');
+            document.getElementById(`tab-${tabName}`).className = "tab-btn px-4 py-2 rounded-xl font-medium text-brand-800 bg-brand-50 whitespace-nowrap transition flex items-center gap-2";
+            
+            if(tabName === 'pos') {
+                setTimeout(() => document.getElementById('barcode-input').focus(), 100);
+            }
+            renderAll();
+        }
+
+        function renderAll() {
+            renderQuickItems();
+            renderCart();
+            renderInventory();
+            renderSales();
+            renderKhata();
+            renderPayroll();
+        }
+
+        // Quick Catalog Category Filter
+        function filterCategory(cat) {
+            selectedCategory = cat;
+            document.querySelectorAll('.cat-pill').forEach(btn => {
+                if(btn.dataset.cat === cat) {
+                    btn.className = "cat-pill px-2.5 py-1 rounded-lg bg-brand-600 text-white";
+                } else {
+                    btn.className = "cat-pill px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700";
+                }
+            });
+            renderQuickItems();
+        }
+
+        // POS Functions
+        function renderQuickItems() {
+            const grid = document.getElementById('quick-items-grid');
+            grid.innerHTML = '';
+            
+            const filtered = selectedCategory === 'all' 
+                ? products 
+                : products.filter(p => p.cat === selectedCategory);
+
+            if(filtered.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-6 text-center text-xs text-slate-400">${currentLang === 'ur' ? 'کوئی پروڈکٹ موجود نہیں' : 'No products found'}</div>`;
+                return;
+            }
+
+            filtered.forEach(p => {
+                const rem = p.totalStock - p.sold;
+                const isOutOfStock = rem <= 0;
+                grid.innerHTML += `
+                    <button onclick="addToCart('${p.id}')" ${isOutOfStock ? 'disabled' : ''} class="p-2.5 bg-slate-50 hover:bg-brand-50/70 border border-slate-200 rounded-xl text-start transition flex flex-col justify-between group active:scale-95 ${isOutOfStock ? 'opacity-50 cursor-not-allowed bg-slate-100' : ''}">
+                        <div class="w-full">
+                            <span class="text-[10px] font-mono text-slate-400">#${p.id}</span>
+                            <p class="font-medium text-xs text-slate-800 line-clamp-2 mt-0.5">${p.name}</p>
+                        </div>
+                        <div class="flex items-center justify-between w-full mt-2 pt-1 border-t border-slate-100">
+                            <span class="text-brand-700 font-bold text-xs">Rs. ${p.price}</span>
+                            <span class="text-[10px] px-1.5 py-0.5 rounded ${rem <= 5 ? 'bg-amber-100 text-amber-800' : 'bg-slate-200/70 text-slate-600'}">
+                                ${rem} ${currentLang === 'ur' ? 'باقی' : 'left'}
+                            </span>
+                        </div>
+                    </button>
+                `;
+            });
+        }
+
+        document.getElementById('barcode-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addProductByInput();
+            }
+        });
+
+        function addProductByInput() {
+            const val = document.getElementById('barcode-input').value.trim();
+            if(!val) return;
+            const prod = products.find(p => p.id === val || p.name.toLowerCase().includes(val.toLowerCase()));
+            if(prod) {
+                addToCart(prod.id);
+                document.getElementById('barcode-input').value = '';
+            } else {
+                playBeep('alert');
+                showToast(currentLang === 'ur' ? 'پروڈکٹ نہیں ملی!' : 'Product not found!', 'alert');
+            }
+        }
+
+        function addToCart(id) {
+            const prod = products.find(p => p.id === id);
+            if(!prod) return;
+            const remStock = prod.totalStock - prod.sold;
+            const existing = cart.find(item => item.id === id);
+            
+            if(existing) {
+                if(existing.qty < remStock) {
+                    existing.qty++;
+                    playBeep('success');
+                } else {
+                    playBeep('alert');
+                    showToast(currentLang === 'ur' ? 'مزید سٹاک دستیاب نہیں ہے!' : 'No more stock available!', 'alert');
+                    return;
+                }
+            } else {
+                if(remStock > 0) {
+                    cart.push({ id: prod.id, name: prod.name, price: prod.price, cost: prod.cost, qty: 1 });
+                    playBeep('success');
+                } else {
+                    playBeep('alert');
+                    showToast(currentLang === 'ur' ? 'یہ پروڈکٹ آؤٹ آف سٹاک ہے!' : 'Product is out of stock!', 'alert');
+                    return;
+                }
+            }
+            renderCart();
+        }
+
+        function updateCartQty(id, change) {
+            const item = cart.find(i => i.id === id);
+            const prod = products.find(p => p.id === id);
+            if(item && prod) {
+                const rem = prod.totalStock - prod.sold;
+                if(change > 0 && item.qty >= rem) {
+                    playBeep('alert');
+                    showToast(currentLang === 'ur' ? 'سٹاک کی حد پوری ہو گئی!' : 'Stock limit reached!', 'alert');
+                    return;
+                }
+                item.qty += change;
+                if(item.qty <= 0) {
+                    cart = cart.filter(i => i.id !== id);
+                }
+            }
+            renderCart();
+        }
+
+        function removeCartItem(id) {
+            cart = cart.filter(i => i.id !== id);
+            renderCart();
+        }
+
+        function clearCart() {
+            if(cart.length === 0) return;
+            if(confirm(currentLang === 'ur' ? 'کیا آپ واقعی کارٹ خالی کرنا چاہتے ہیں؟' : 'Are you sure you want to clear the cart?')) {
+                cart = [];
+                document.getElementById('cart-discount').value = 0;
+                document.getElementById('cart-cash-received').value = '';
+                document.getElementById('cart-customer-name').value = '';
+                document.getElementById('cart-customer-phone').value = '';
+                renderCart();
+            }
+        }
+
+        function calculateCartTotals() {
+            let subtotal = 0;
+            cart.forEach(item => {
+                subtotal += item.price * item.qty;
+            });
+
+            const discount = Math.max(0, parseFloat(document.getElementById('cart-discount').value) || 0);
+            const grandTotal = Math.max(0, subtotal - discount);
+
+            document.getElementById('cart-subtotal').innerText = `Rs. ${subtotal}`;
+            document.getElementById('cart-grand-total').innerText = `Rs. ${grandTotal}`;
+
+            calculateChangeDue();
+            return { subtotal, discount, grandTotal };
+        }
+
+        function calculateChangeDue() {
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            const discount = Math.max(0, parseFloat(document.getElementById('cart-discount').value) || 0);
+            const grandTotal = Math.max(0, subtotal - discount);
+            const cash = parseFloat(document.getElementById('cart-cash-received').value) || 0;
+            const change = Math.max(0, cash - grandTotal);
+            document.getElementById('cart-change-due').innerText = `Rs. ${change}`;
+        }
+
+        function renderCart() {
+            const list = document.getElementById('cart-items-list');
+            list.innerHTML = '';
+
+            if(cart.length === 0) {
+                list.innerHTML = `
+                    <div class="text-slate-400 text-center py-10 flex flex-col items-center">
+                        <span class="text-4xl mb-2 opacity-50">🛍️</span>
+                        <p>${langData[currentLang].empty_cart}</p>
+                    </div>`;
+                document.getElementById('cart-subtotal').innerText = 'Rs. 0';
+                document.getElementById('cart-grand-total').innerText = 'Rs. 0';
+                document.getElementById('cart-change-due').innerText = 'Rs. 0';
+                return;
+            }
+
+            cart.forEach(item => {
+                const sub = item.price * item.qty;
+                list.innerHTML += `
+                    <div class="pt-2 flex justify-between items-center text-xs">
+                        <div class="max-w-[170px]">
+                            <p class="font-semibold text-slate-800 truncate">${item.name}</p>
+                            <p class="text-[11px] text-slate-500">Rs. ${item.price} × ${item.qty}</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-slate-900">Rs. ${sub}</span>
+                            <div class="flex items-center border border-slate-200 rounded-lg bg-slate-50 overflow-hidden">
+                                <button onclick="updateCartQty('${item.id}', -1)" class="px-2 py-0.5 text-slate-600 hover:bg-slate-200 transition font-bold">-</button>
+                                <span class="px-2 text-xs font-semibold">${item.qty}</span>
+                                <button onclick="updateCartQty('${item.id}', 1)" class="px-2 py-0.5 text-slate-600 hover:bg-slate-200 transition font-bold">+</button>
+                            </div>
+                            <button onclick="removeCartItem('${item.id}')" title="ہٹائیں" class="text-slate-300 hover:text-rose-600 transition p-1">
+                                🗑️
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            calculateCartTotals();
+        }
+
+        let lastReceiptData = null;
+
+        function completeSale() {
+            if(cart.length === 0) {
+                playBeep('alert');
+                showToast(currentLang === 'ur' ? 'کارٹ خالی ہے!' : 'Cart is empty!', 'alert');
+                return;
+            }
+
+            const { subtotal, discount, grandTotal } = calculateCartTotals();
+            let totalCost = 0;
+            let itemsCount = 0;
+
+            cart.forEach(item => {
+                totalCost += item.cost * item.qty;
+                itemsCount += item.qty;
+
+                const p = products.find(prod => prod.id === item.id);
+                if(p) p.sold += item.qty;
+            });
+
+            const profit = grandTotal - totalCost;
+            const invoiceNo = 'INV-' + Math.floor(1000 + Math.random() * 9000);
+            const now = new Date();
+            const dateStr = currentLang === 'ur'
+                ? now.toLocaleDateString('ur-PK') + ' ' + now.toLocaleTimeString('ur-PK', { hour: '2-digit', minute: '2-digit' })
+                : now.toLocaleDateString('en-PK') + ' ' + now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+            const custName = document.getElementById('cart-customer-name').value.trim();
+            const custPhone = document.getElementById('cart-customer-phone').value.trim();
+            const payMode = document.getElementById('cart-payment-mode').value;
+
+            const saleRecord = {
+                invoiceNo,
+                date: dateStr,
+                customer: custName || (currentLang === 'ur' ? 'عام گاہک' : 'Walk-in'),
+                phone: custPhone || '',
+                payMode,
+                items: [...cart],
+                itemsCount,
+                subtotal,
+                discount,
+                totalAmount: grandTotal,
+                profit
+            };
+
+            salesHistory.unshift(saleRecord);
+
+            // KHATA INTEGRATION: If sale is Udhaar (Credit) and customer name is given
+            if(payMode === 'Udhaar' && custName) {
+                let debtor = customerKhata.find(c => c.name.toLowerCase() === custName.toLowerCase() || (custPhone && c.phone === custPhone));
+                if(debtor) {
+                    debtor.totalCredit += grandTotal;
+                    debtor.remainingDebt += grandTotal;
+                    debtor.lastDate = now.toISOString().slice(0, 10);
+                } else {
+                    customerKhata.unshift({
+                        id: Date.now(),
+                        name: custName,
+                        phone: custPhone || '',
+                        address: currentLang === 'ur' ? 'کاؤنٹر گاہک' : 'Walk-in Customer',
+                        totalCredit: grandTotal,
+                        received: 0,
+                        remainingDebt: grandTotal,
+                        lastDate: now.toISOString().slice(0, 10)
+                    });
+                }
+            }
+
+            saveData();
+
+            lastReceiptData = saleRecord;
+            showReceiptModal(saleRecord);
+
+            // Reset inputs & cart
+            cart = [];
+            document.getElementById('cart-discount').value = 0;
+            document.getElementById('cart-cash-received').value = '';
+            document.getElementById('cart-customer-name').value = '';
+            document.getElementById('cart-customer-phone').value = '';
+
+            renderAll();
+            showToast(currentLang === 'ur' ? 'بل کامیابی سے محفوظ ہو گیا!' : 'Sale completed successfully!', 'success');
+        }
+
+        function showReceiptModal(record) {
+            document.getElementById('receipt-invoice-no').innerText = record.invoiceNo;
+            document.getElementById('receipt-datetime').innerText = record.date;
+            
+            const custDisplay = document.getElementById('receipt-customer-display');
+            if(record.customer && record.customer !== 'عام گاہک' && record.customer !== 'Walk-in') {
+                custDisplay.classList.remove('hidden');
+                document.getElementById('r-cust-name').innerText = record.customer + (record.phone ? ` (${record.phone})` : '');
+            } else {
+                custDisplay.classList.add('hidden');
+            }
+
+            const container = document.getElementById('receipt-items-print');
+            container.innerHTML = '';
+            record.items.forEach(i => {
+                container.innerHTML += `
+                    <div class="flex justify-between py-1 text-xs">
+                        <span>${i.name} × ${i.qty}</span>
+                        <span class="font-mono">Rs. ${i.price * i.qty}</span>
+                    </div>
+                `;
+            });
+
+            document.getElementById('receipt-subtotal-amount').innerText = `Rs. ${record.subtotal || record.totalAmount}`;
+            
+            const discRow = document.getElementById('receipt-discount-row');
+            if(record.discount > 0) {
+                discRow.classList.remove('hidden');
+                document.getElementById('receipt-discount-amount').innerText = `- Rs. ${record.discount}`;
+            } else {
+                discRow.classList.add('hidden');
+            }
+
+            document.getElementById('receipt-total-amount').innerText = `Rs. ${record.totalAmount}`;
+            document.getElementById('receipt-pay-mode-text').innerText = record.payMode || 'Cash';
+
+            document.getElementById('receipt-modal').classList.remove('hidden');
+        }
+
+        function closeReceiptModal() {
+            document.getElementById('receipt-modal').classList.add('hidden');
+            document.getElementById('barcode-input').focus();
+        }
+
+        function printReceipt() {
+            window.print();
+        }
+
+        function shareWhatsApp() {
+            if(!lastReceiptData) return;
+            let text = `*${langData[currentLang].store_title}*%0A`
+                     + `اونر: دانیال احمد (0301-4210508)%0A`
+                     + `بل نمبر: ${lastReceiptData.invoiceNo}%0A`
+                     + `تاریخ: ${lastReceiptData.date}%0A`;
+            if(lastReceiptData.customer && lastReceiptData.customer !== 'عام گاہک' && lastReceiptData.customer !== 'Walk-in') {
+                text += `گاہک: ${lastReceiptData.customer}%0A`;
+            }
+            text += `--------------------------------%0A`;
+            lastReceiptData.items.forEach(i => {
+                text += `${i.name} x ${i.qty} = Rs.${i.price * i.qty}%0A`;
+            });
+            text += `--------------------------------%0A`;
+            if(lastReceiptData.discount > 0) {
+                text += `رعایت: Rs. ${lastReceiptData.discount}%0A`;
+            }
+            text += `*کل رقم: Rs. ${lastReceiptData.totalAmount}*%0A`
+                  + `طریقہ ادائیگی: ${lastReceiptData.payMode}%0A`
+                  + `شکریہ! دوبارہ تشریف لائیں۔`;
+
+            const phone = lastReceiptData.phone ? lastReceiptData.phone.replace(/[^0-9]/g, '') : '';
+            const url = phone ? `https://wa.me/92${phone.replace(/^0/, '')}?text=${text}` : `https://wa.me/?text=${text}`;
+            window.open(url, '_blank');
+        }
+
+        // ==========================================
+        // KHATA / UDHAAR BOOK FUNCTIONS (NEW!)      
+        // ==========================================
+
+        function switchKhataSubTab(type) {
+            currentKhataSubTab = type;
+            const btnCust = document.getElementById('subtab-btn-customers');
+            const btnSupp = document.getElementById('subtab-btn-suppliers');
+            const boxCust = document.getElementById('khata-customers-container');
+            const boxSupp = document.getElementById('khata-suppliers-container');
+            const btnAddCust = document.getElementById('btn-add-customer-debt');
+            const btnAddSupp = document.getElementById('btn-add-supplier-debt');
+
+            if(type === 'customers') {
+                btnCust.className = "px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 bg-brand-600 text-white shadow";
+                btnSupp.className = "px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 text-slate-600 hover:text-slate-900";
+                boxCust.classList.remove('hidden');
+                boxSupp.classList.add('hidden');
+                btnAddCust.classList.remove('hidden');
+                btnAddSupp.classList.add('hidden');
+            } else {
+                btnSupp.className = "px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 bg-rose-600 text-white shadow";
+                btnCust.className = "px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 text-slate-600 hover:text-slate-900";
+                boxSupp.classList.remove('hidden');
+                boxCust.classList.add('hidden');
+                btnAddSupp.classList.remove('hidden');
+                btnAddCust.classList.add('hidden');
+            }
+        }
+
+        function renderKhata() {
+            // Calculate Totals
+            let totalReceivable = 0;
+            let debtorCount = 0;
+            customerKhata.forEach(c => {
+                totalReceivable += (c.remainingDebt || 0);
+                if(c.remainingDebt > 0) debtorCount++;
+            });
+
+            let totalPayable = 0;
+            let creditorCount = 0;
+            supplierKhata.forEach(s => {
+                totalPayable += (s.remainingPayable || 0);
+                if(s.remainingPayable > 0) creditorCount++;
+            });
+
+            const netBalance = totalReceivable - totalPayable;
+
+            document.getElementById('stat-khata-receivable').innerText = `Rs. ${totalReceivable.toLocaleString()}`;
+            document.getElementById('stat-khata-payable').innerText = `Rs. ${totalPayable.toLocaleString()}`;
+            document.getElementById('stat-khata-net').innerText = (netBalance >= 0 ? `+Rs. ` : `-Rs. `) + Math.abs(netBalance).toLocaleString();
+            document.getElementById('stat-khata-total-accounts').innerText = customerKhata.length + supplierKhata.length;
+
+            document.getElementById('stat-debtors-count').innerText = currentLang === 'ur' 
+                ? `${debtorCount} گاہکوں سے رقم لینی ہے` 
+                : `${debtorCount} customers owe money`;
+
+            document.getElementById('stat-creditors-count').innerText = currentLang === 'ur' 
+                ? `${creditorCount} سپلائرز کو رقم دینی ہے` 
+                : `${creditorCount} suppliers to pay`;
+
+            renderCustomerKhata();
+            renderSupplierKhata();
+        }
+
+        // 1. Render Customer Debtors
+        function renderCustomerKhata() {
+            const tbody = document.getElementById('khata-customers-tbody');
+            tbody.innerHTML = '';
+
+            const query = (document.getElementById('khata-customer-search')?.value || '').toLowerCase().trim();
+            const filtered = customerKhata.filter(c => {
+                return c.name.toLowerCase().includes(query) || (c.phone && c.phone.includes(query)) || (c.address && c.address.toLowerCase().includes(query));
+            });
+
+            if(filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-slate-400 text-xs">${currentLang === 'ur' ? 'کوئی ادھار گاہک موجود نہیں' : 'No customer debtors found'}</td></tr>`;
+                return;
+            }
+
+            filtered.forEach(c => {
+                const rem = c.remainingDebt;
+                const isCleared = rem <= 0;
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                        <td class="p-3 font-semibold text-slate-800 flex items-center gap-2">
+                            <span>${c.name}</span>
+                            ${isCleared ? `<span class="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-bold">بے باق (Cleared)</span>` : ''}
+                        </td>
+                        <td class="p-3 font-mono text-xs text-slate-600">${c.phone || '-'}</td>
+                        <td class="p-3 text-xs text-slate-500 max-w-xs truncate">${c.address || '-'}</td>
+                        <td class="p-3 text-xs text-slate-700">Rs. ${c.totalCredit.toLocaleString()}</td>
+                        <td class="p-3 text-xs text-emerald-700 font-medium">Rs. ${c.received.toLocaleString()}</td>
+                        <td class="p-3">
+                            <span class="font-bold text-xs ${isCleared ? 'text-slate-400' : 'text-rose-600 bg-rose-50 px-2 py-0.5 rounded-lg border border-rose-200'}">
+                                Rs. ${rem.toLocaleString()}
+                            </span>
+                        </td>
+                        <td class="p-3 font-mono text-xs text-slate-400">${c.lastDate || '-'}</td>
+                        <td class="p-3">
+                            <div class="flex items-center gap-1.5">
+                                <button onclick="openReceiveDebtModal(${c.id})" ${isCleared ? 'disabled' : ''} class="text-xs bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 text-white px-2.5 py-1 rounded-lg transition font-medium flex items-center gap-1 shadow-sm">
+                                    <span>💵</span>
+                                    <span>${currentLang === 'ur' ? 'وصولی' : 'Receive'}</span>
+                                </button>
+                                <button onclick="addMoreDebtToCustomer(${c.id})" title="مزید ادھار شامل کریں" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1 rounded-lg transition font-medium">
+                                    + ${currentLang === 'ur' ? 'ادھار' : 'Debt'}
+                                </button>
+                                <button onclick="sendKhataWhatsApp(${c.id})" title="واٹس ایپ پر یاد دہانی بھیجیں" class="text-xs bg-emerald-50 hover:bg-emerald-100 text-emerald-700 p-1.5 rounded-lg transition">
+                                    📲
+                                </button>
+                                <button onclick="deleteCustomerDebt(${c.id})" title="کھاتہ حذف کریں" class="text-xs text-slate-300 hover:text-rose-600 p-1.5 transition">
+                                    🗑️
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        // 2. Render Supplier Payables
+        function renderSupplierKhata() {
+            const tbody = document.getElementById('khata-suppliers-tbody');
+            tbody.innerHTML = '';
+
+            const query = (document.getElementById('khata-supplier-search')?.value || '').toLowerCase().trim();
+            const filtered = supplierKhata.filter(s => {
+                return s.company.toLowerCase().includes(query) || (s.dealer && s.dealer.toLowerCase().includes(query)) || (s.items && s.items.toLowerCase().includes(query));
+            });
+
+            if(filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-slate-400 text-xs">${currentLang === 'ur' ? 'کوئی سپلائر کھاتہ موجود نہیں' : 'No supplier accounts found'}</td></tr>`;
+                return;
+            }
+
+            filtered.forEach(s => {
+                const rem = s.remainingPayable;
+                const isCleared = rem <= 0;
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                        <td class="p-3 font-semibold text-slate-800 flex items-center gap-2">
+                            <span>${s.company}</span>
+                            ${isCleared ? `<span class="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-bold">بے باق (Cleared)</span>` : ''}
+                        </td>
+                        <td class="p-3 text-xs text-slate-600">
+                            <div>${s.dealer || '-'}</div>
+                            <div class="font-mono text-[11px] text-slate-400">${s.phone || ''}</div>
+                        </td>
+                        <td class="p-3 text-xs text-slate-600 max-w-xs truncate">${s.items || '-'}</td>
+                        <td class="p-3 text-xs text-slate-700">Rs. ${s.totalBill.toLocaleString()}</td>
+                        <td class="p-3 text-xs text-emerald-700 font-medium">Rs. ${s.paid.toLocaleString()}</td>
+                        <td class="p-3">
+                            <span class="font-bold text-xs ${isCleared ? 'text-slate-400' : 'text-rose-600 bg-rose-50 px-2 py-0.5 rounded-lg border border-rose-200'}">
+                                Rs. ${rem.toLocaleString()}
+                            </span>
+                        </td>
+                        <td class="p-3 font-mono text-xs text-slate-400">${s.lastDate || '-'}</td>
+                        <td class="p-3">
+                            <div class="flex items-center gap-1.5">
+                                <button onclick="openPayDebtModal(${s.id})" ${isCleared ? 'disabled' : ''} class="text-xs bg-rose-600 hover:bg-rose-700 disabled:opacity-40 text-white px-2.5 py-1 rounded-lg transition font-medium flex items-center gap-1 shadow-sm">
+                                    <span>💸</span>
+                                    <span>${currentLang === 'ur' ? 'ادائیگی' : 'Pay'}</span>
+                                </button>
+                                <button onclick="addMoreBillToSupplier(${s.id})" title="نیا مال / بل رقم شامل کریں" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1 rounded-lg transition font-medium">
+                                    + ${currentLang === 'ur' ? 'بل' : 'Bill'}
+                                </button>
+                                <button onclick="deleteSupplierDebt(${s.id})" title="کھاتہ حذف کریں" class="text-xs text-slate-300 hover:text-rose-600 p-1.5 transition">
+                                    🗑️
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        // Receive Payment from Customer Actions
+        function openReceiveDebtModal(id) {
+            const cust = customerKhata.find(c => c.id === id);
+            if(!cust) return;
+            document.getElementById('recv-cust-id').value = cust.id;
+            document.getElementById('recv-cust-name-disp').innerText = cust.name;
+            document.getElementById('recv-cust-phone-disp').innerText = cust.phone || '-';
+            document.getElementById('recv-cust-debt-disp').innerText = `Rs. ${cust.remainingDebt.toLocaleString()}`;
+            document.getElementById('recv-amount').value = '';
+            document.getElementById('recv-notes').value = '';
+            document.getElementById('modal-receive-debt').classList.remove('hidden');
+            setTimeout(() => document.getElementById('recv-amount').focus(), 100);
+        }
+
+        function closeReceiveDebtModal() {
+            document.getElementById('modal-receive-debt').classList.add('hidden');
+        }
+
+        function saveReceiveDebt() {
+            const id = parseInt(document.getElementById('recv-cust-id').value);
+            const amount = parseFloat(document.getElementById('recv-amount').value);
+            const method = document.getElementById('recv-method').value;
+            const notes = document.getElementById('recv-notes').value.trim();
+
+            if(isNaN(amount) || amount <= 0) {
+                playBeep('alert');
+                showToast(currentLang === 'ur' ? 'براہ کرم درست وصولی رقم درج کریں!' : 'Please enter valid receipt amount!', 'alert');
+                return;
+            }
+
+            const cust = customerKhata.find(c => c.id === id);
+            if(cust) {
+                cust.received += amount;
+                cust.remainingDebt = Math.max(0, cust.remainingDebt - amount);
+                cust.lastDate = new Date().toISOString().slice(0, 10);
+                saveData();
+                closeReceiveDebtModal();
+                renderKhata();
+                playBeep('success');
+                showToast(currentLang === 'ur' ? `${cust.name} سے Rs. ${amount.toLocaleString()} کی وصولی درج کر لی گئی` : `Received Rs. ${amount.toLocaleString()} from ${cust.name}`, 'success');
+            }
+        }
+
+        // Pay Debt to Supplier Actions
+        function openPayDebtModal(id) {
+            const supp = supplierKhata.find(s => s.id === id);
+            if(!supp) return;
+            document.getElementById('pay-supp-id').value = supp.id;
+            document.getElementById('pay-supp-company-disp').innerText = supp.company;
+            document.getElementById('pay-supp-dealer-disp').innerText = supp.dealer + (supp.phone ? ` (${supp.phone})` : '');
+            document.getElementById('pay-supp-debt-disp').innerText = `Rs. ${supp.remainingPayable.toLocaleString()}`;
+            document.getElementById('pay-amount').value = '';
+            document.getElementById('pay-notes').value = '';
+            document.getElementById('modal-pay-debt').classList.remove('hidden');
+            setTimeout(() => document.getElementById('pay-amount').focus(), 100);
+        }
+
+        function closePayDebtModal() {
+            document.getElementById('modal-pay-debt').classList.add('hidden');
+        }
+
+        function savePayDebt() {
+            const id = parseInt(document.getElementById('pay-supp-id').value);
+            const amount = parseFloat(document.getElementById('pay-amount').value);
+            const method = document.getElementById('pay-method').value;
+            const notes = document.getElementById('pay-notes').value.trim();
+
+            if(isNaN(amount) || amount <= 0) {
+                playBeep('alert');
+                showToast(currentLang === 'ur' ? 'براہ کرم درست ادائیگی رقم درج کریں!' : 'Please enter valid payment amount!', 'alert');
+                return;
+            }
+
+            const supp = supplierKhata.find(s => s.id === id);
+            if(supp) {
+                supp.paid += amount;
+                supp.remainingPayable = Math.max(0, supp.remainingPayable - amount);
+                supp.lastDate = new Date().toISOString().slice(0, 10);
+                saveData();
+                closePayDebtModal();
+                renderKhata();
+                playBeep('success');
+                showToast(currentLang === 'ur' ? `${supp.company} کو Rs. ${amount.toLocaleString()} کی ادائیگی درج کر لی گئی` : `Paid Rs. ${amount.toLocaleString()} to ${supp.company}`, 'success');
+            }
+        }
+
+        // Add More Debt to Customer
+        function addMoreDebtToCustomer(id) {
+            const cust = customerKhata.find(c => c.id === id);
+            if(!cust) return;
+            const promptMsg = currentLang === 'ur' ? `${cust.name} کے کھاتے میں مزید کتنا ادھار شامل کرنا ہے؟` : `Add more credit to ${cust.name}'s account:`;
+            const addAmount = prompt(promptMsg, "500");
+            if(addAmount && !isNaN(addAmount) && parseFloat(addAmount) > 0) {
+                const amt = parseFloat(addAmount);
+                cust.totalCredit += amt;
+                cust.remainingDebt += amt;
+                cust.lastDate = new Date().toISOString().slice(0, 10);
+                saveData();
+                renderKhata();
+                showToast(currentLang === 'ur' ? `${cust.name} کے کھاتے میں Rs. ${amt} مزید ادھار شامل کر دیا گیا` : `Added Rs. ${amt} debt to ${cust.name}`, 'info');
+            }
+        }
+
+        // Add More Bill to Supplier
+        function addMoreBillToSupplier(id) {
+            const supp = supplierKhata.find(s => s.id === id);
+            if(!supp) return;
+            const promptMsg = currentLang === 'ur' ? `${supp.company} کے نئے بل کی رقم درج کریں:` : `Enter new bill amount for ${supp.company}:`;
+            const addAmount = prompt(promptMsg, "10000");
+            if(addAmount && !isNaN(addAmount) && parseFloat(addAmount) > 0) {
+                const amt = parseFloat(addAmount);
+                supp.totalBill += amt;
+                supp.remainingPayable += amt;
+                supp.lastDate = new Date().toISOString().slice(0, 10);
+                saveData();
+                renderKhata();
+                showToast(currentLang === 'ur' ? `${supp.company} کے کھاتے میں Rs. ${amt} بل شامل کر دیا گیا` : `Added Rs. ${amt} to ${supp.company}`, 'info');
+            }
+        }
+
+        // WhatsApp Balance Reminder
+        function sendKhataWhatsApp(id) {
+            const cust = customerKhata.find(c => c.id === id);
+            if(!cust) return;
+            if(!cust.phone) {
+                showToast(currentLang === 'ur' ? 'گاہک کا فون نمبر درج نہیں ہے!' : 'Customer phone not available!', 'alert');
+                return;
+            }
+            const cleanPhone = cust.phone.replace(/[^0-9]/g, '');
+            const text = `*محترم ${cust.name} صاحب!*%0A`
+                       + `السلام علیکم ورحمۃ اللہ وبرکاتہ%0A`
+                       + `*پاک کریانہ اینڈ جنرل سٹور* (اونر: دانیال احمد - 0301-4210508)%0A`
+                       + `آپ کے ادھار کھاتے میں موجودہ بقایا رقم: *Rs. ${cust.remainingDebt.toLocaleString()}* ہے۔%0A`
+                       + `برائے مہربانی تشریف لا کر بقایا رقم ادا فرما دیں۔%0A`
+                       + `شکریہ و جزاکم اللہ خیراً!`;
+            window.open(`https://wa.me/92${cleanPhone.replace(/^0/, '')}?text=${text}`, '_blank');
+        }
+
+        // Add Customer Debtor Modal Actions
+        function openAddCustomerDebtModal() {
+            document.getElementById('add-c-name').value = '';
+            document.getElementById('add-c-phone').value = '';
+            document.getElementById('add-c-address').value = '';
+            document.getElementById('add-c-amount').value = '';
+            document.getElementById('modal-add-customer-debt').classList.remove('hidden');
+        }
+
+        function closeAddCustomerDebtModal() {
+            document.getElementById('modal-add-customer-debt').classList.add('hidden');
+        }
+
+        function saveNewCustomerDebt() {
+            const name = document.getElementById('add-c-name').value.trim();
+            const phone = document.getElementById('add-c-phone').value.trim();
+            const address = document.getElementById('add-c-address').value.trim();
+            const amount = parseFloat(document.getElementById('add-c-amount').value) || 0;
+
+            if(!name) {
+                playBeep('alert');
+                showToast(currentLang === 'ur' ? 'گاہک کا نام درج کرنا لازمی ہے!' : 'Customer name is required!', 'alert');
+                return;
+            }
+
+            customerKhata.unshift({
+                id: Date.now(),
+                name,
+                phone,
+                address,
+                totalCredit: amount,
+                received: 0,
+                remainingDebt: amount,
+                lastDate: new Date().toISOString().slice(0, 10)
+            });
+
+            saveData();
+            closeAddCustomerDebtModal();
+            renderKhata();
+            showToast(currentLang === 'ur' ? 'نیا گاہک کھاتہ کامیابی سے درج ہو گیا' : 'Customer account added', 'success');
+        }
+
+        function deleteCustomerDebt(id) {
+            const cust = customerKhata.find(c => c.id === id);
+            if(!cust) return;
+            if(confirm(currentLang === 'ur' ? `کیا آپ واقعی "${cust.name}" کا کھاتہ حذف کرنا چاہتے ہیں؟` : `Delete khata for ${cust.name}?`)) {
+                customerKhata = customerKhata.filter(c => c.id !== id);
+                saveData();
+                renderKhata();
+                showToast(currentLang === 'ur' ? 'کھاتہ حذف کر دیا گیا' : 'Account deleted', 'info');
+            }
+        }
+
+        // Add Supplier Creditor Modal Actions
+        function openAddSupplierDebtModal() {
+            document.getElementById('add-s-company').value = '';
+            document.getElementById('add-s-dealer').value = '';
+            document.getElementById('add-s-items').value = '';
+            document.getElementById('add-s-amount').value = '';
+            document.getElementById('modal-add-supplier-debt').classList.remove('hidden');
+        }
+
+        function closeAddSupplierDebtModal() {
+            document.getElementById('modal-add-supplier-debt').classList.add('hidden');
+        }
+
+        function saveNewSupplierDebt() {
+            const company = document.getElementById('add-s-company').value.trim();
+            const dealer = document.getElementById('add-s-dealer').value.trim();
+            const items = document.getElementById('add-s-items').value.trim();
+            const amount = parseFloat(document.getElementById('add-s-amount').value) || 0;
+
+            if(!company) {
+                playBeep('alert');
+                showToast(currentLang === 'ur' ? 'کمپنی یا سپلائر کا نام درج کرنا لازمی ہے!' : 'Company name is required!', 'alert');
+                return;
+            }
+
+            supplierKhata.unshift({
+                id: Date.now(),
+                company,
+                dealer,
+                phone: '',
+                items,
+                totalBill: amount,
+                paid: 0,
+                remainingPayable: amount,
+                lastDate: new Date().toISOString().slice(0, 10)
+            });
+
+            saveData();
+            closeAddSupplierDebtModal();
+            renderKhata();
+            showToast(currentLang === 'ur' ? 'نیا سپلائر کھاتہ درج ہو گیا' : 'Supplier account added', 'success');
+        }
+
+        function deleteSupplierDebt(id) {
+            const supp = supplierKhata.find(s => s.id === id);
+            if(!supp) return;
+            if(confirm(currentLang === 'ur' ? `کیا آپ واقعی "${supp.company}" کا کھاتہ حذف کرنا چاہتے ہیں؟` : `Delete supplier ${supp.company}?`)) {
+                supplierKhata = supplierKhata.filter(s => s.id !== id);
+                saveData();
+                renderKhata();
+                showToast(currentLang === 'ur' ? 'سپلائر کھاتہ حذف کر دیا گیا' : 'Supplier account deleted', 'info');
+            }
+        }
+
+        // Inventory Management
+        function renderInventory() {
+            const tbody = document.getElementById('inventory-table-body');
+            tbody.innerHTML = '';
+
+            const query = (document.getElementById('inventory-search')?.value || '').toLowerCase().trim();
+            let totalVal = 0;
+            let lowCount = 0;
+
+            const filtered = products.filter(p => {
+                const match = p.name.toLowerCase().includes(query) || p.id.toLowerCase().includes(query);
+                return match;
+            });
+
+            products.forEach(p => {
+                const rem = p.totalStock - p.sold;
+                totalVal += (rem * p.cost);
+                if(rem <= 5) lowCount++;
+            });
+
+            document.getElementById('stat-inv-total-items').innerText = products.length;
+            document.getElementById('stat-inv-low-stock').innerText = lowCount;
+            document.getElementById('stat-inv-stock-value').innerText = `Rs. ${totalVal.toLocaleString()}`;
+
+            if(filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" class="p-6 text-center text-slate-400 text-xs">${currentLang === 'ur' ? 'کوئی پروڈکٹ موجود نہیں' : 'No products found'}</td></tr>`;
+                return;
+            }
+
+            filtered.forEach(p => {
+                const rem = p.totalStock - p.sold;
+                const margin = p.price - p.cost;
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                        <td class="p-3 font-mono text-xs font-semibold text-slate-500">${p.id}</td>
+                        <td class="p-3 font-semibold text-slate-800">${p.name}</td>
+                        <td class="p-3 text-slate-600">Rs. ${p.cost}</td>
+                        <td class="p-3 text-slate-800 font-semibold">Rs. ${p.price}</td>
+                        <td class="p-3 text-emerald-600 font-medium">+Rs. ${margin}</td>
+                        <td class="p-3 text-slate-500">${p.totalStock}</td>
+                        <td class="p-3 text-brand-700 font-semibold">${p.sold}</td>
+                        <td class="p-3">
+                            <span class="px-2 py-0.5 rounded-full text-xs font-bold ${rem <= 5 ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-800'}">
+                                ${rem}
+                            </span>
+                        </td>
+                        <td class="p-3">
+                            <div class="flex items-center gap-1.5">
+                                <button onclick="restockProduct('${p.id}')" title="سٹاک بڑھائیں" class="text-xs bg-brand-50 hover:bg-brand-100 text-brand-800 px-2 py-1 rounded-lg transition font-medium">
+                                    ${currentLang === 'ur' ? '+ سٹاک' : '+ Stock'}
+                                </button>
+                                <button onclick="editProduct('${p.id}')" title="تبدیل کریں" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 p-1.5 rounded-lg transition">
+                                    ✏️
+                                </button>
+                                <button onclick="deleteProduct('${p.id}')" title="حذف کریں" class="text-xs bg-rose-50 hover:bg-rose-100 text-rose-600 p-1.5 rounded-lg transition">
+                                    🗑️
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function restockProduct(id) {
+            const p = products.find(prod => prod.id === id);
+            if(!p) return;
+            const promptMsg = currentLang === 'ur' ? `${p.name}\nمیں مزید کتنی مقدار شامل کرنی ہے؟` : `How much quantity to add to ${p.name}?`;
+            const addQ = prompt(promptMsg, "10");
+            if(addQ && !isNaN(addQ) && parseInt(addQ) > 0) {
+                p.totalStock += parseInt(addQ);
+                saveData();
+                renderAll();
+                showToast(currentLang === 'ur' ? `${p.name} میں ${addQ} یونٹ شامل کر دیے گئے` : `Added ${addQ} units to ${p.name}`, 'success');
+            }
+        }
+
+        function openAddProductModal() {
+            document.getElementById('m-edit-id').value = '';
+            document.getElementById('prod-modal-title').innerText = langData[currentLang].modal_prod_title;
+            document.getElementById('m-barcode').value = String(Math.floor(1000 + Math.random() * 9000));
+            document.getElementById('m-name').value = '';
+            document.getElementById('m-cat').value = 'ration';
+            document.getElementById('m-cost').value = '';
+            document.getElementById('m-price').value = '';
+            document.getElementById('m-stock').value = '50';
+            document.getElementById('product-modal').classList.remove('hidden');
+        }
+
+        function editProduct(id) {
+            const p = products.find(prod => prod.id === id);
+            if(!p) return;
+            document.getElementById('m-edit-id').value = p.id;
+            document.getElementById('prod-modal-title').innerText = currentLang === 'ur' ? 'پروڈکٹ میں ترمیم کریں' : 'Edit Product';
+            document.getElementById('m-barcode').value = p.id;
+            document.getElementById('m-name').value = p.name;
+            document.getElementById('m-cat').value = p.cat || 'ration';
+            document.getElementById('m-cost').value = p.cost;
+            document.getElementById('m-price').value = p.price;
+            document.getElementById('m-stock').value = p.totalStock;
+            document.getElementById('product-modal').classList.remove('hidden');
+        }
+
+        function closeAddProductModal() {
+            document.getElementById('product-modal').classList.add('hidden');
+        }
+
+        function saveProductForm() {
+            const editId = document.getElementById('m-edit-id').value;
+            const barcode = document.getElementById('m-barcode').value.trim() || String(Math.floor(1000 + Math.random() * 9000));
+            const name = document.getElementById('m-name').value.trim();
+            const cat = document.getElementById('m-cat').value;
+            const cost = parseFloat(document.getElementById('m-cost').value);
+            const price = parseFloat(document.getElementById('m-price').value);
+            const stock = parseInt(document.getElementById('m-stock').value);
+
+            if(!name || isNaN(cost) || isNaN(price) || isNaN(stock)) {
+                playBeep('alert');
+                showToast(currentLang === 'ur' ? 'تمام خانے درست پُر کریں!' : 'Please fill all fields correctly!', 'alert');
+                return;
+            }
+
+            if(editId) {
+                // Update
+                const p = products.find(prod => prod.id === editId);
+                if(p) {
+                    p.id = barcode;
+                    p.name = name;
+                    p.cat = cat;
+                    p.cost = cost;
+                    p.price = price;
+                    p.totalStock = stock;
+                }
+            } else {
+                // Add new
+                if(products.some(p => p.id === barcode)) {
+                    playBeep('alert');
+                    showToast(currentLang === 'ur' ? 'یہ بارکوڈ پہلے سے موجود ہے!' : 'Barcode already exists!', 'alert');
+                    return;
+                }
+                products.push({ id: barcode, name, cat, cost, price, totalStock: stock, sold: 0 });
+            }
+
+            saveData();
+            closeAddProductModal();
+            renderAll();
+            showToast(currentLang === 'ur' ? 'پروڈکٹ کامیابی سے محفوظ ہو گئی' : 'Product saved successfully', 'success');
+        }
+
+        function deleteProduct(id) {
+            const p = products.find(prod => prod.id === id);
+            if(!p) return;
+            if(confirm(currentLang === 'ur' ? `کیا آپ واقعی "${p.name}" کو حذف کرنا چاہتے ہیں؟` : `Delete "${p.name}"?`)) {
+                products = products.filter(prod => prod.id !== id);
+                saveData();
+                renderAll();
+                showToast(currentLang === 'ur' ? 'پروڈکٹ حذف کر دی گئی' : 'Product deleted', 'info');
+            }
+        }
+
+        // Sales Report
+        function renderSales() {
+            let totalRev = 0;
+            let totalProf = 0;
+            let totalItems = 0;
+
+            salesHistory.forEach(s => {
+                totalRev += s.totalAmount;
+                totalProf += s.profit;
+                totalItems += s.itemsCount || 0;
+            });
+
+            document.getElementById('stat-total-revenue').innerText = `Rs. ${totalRev.toLocaleString()}`;
+            document.getElementById('stat-total-profit').innerText = `Rs. ${totalProf.toLocaleString()}`;
+            document.getElementById('stat-total-bills').innerText = salesHistory.length;
+            document.getElementById('stat-total-items-sold').innerText = totalItems;
+
+            const tbody = document.getElementById('sales-table-body');
+            tbody.innerHTML = '';
+
+            const query = (document.getElementById('sales-search')?.value || '').toLowerCase().trim();
+            const filtered = salesHistory.filter(s => {
+                return s.invoiceNo.toLowerCase().includes(query) || (s.customer && s.customer.toLowerCase().includes(query));
+            });
+
+            if(filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-slate-400 text-xs">${currentLang === 'ur' ? 'کوئی بل ریکارڈ نہیں ملا' : 'No sales records found'}</td></tr>`;
+                return;
+            }
+
+            filtered.forEach(s => {
+                const payBadgeColor = s.payMode === 'Cash' ? 'bg-emerald-100 text-emerald-800' :
+                                      s.payMode === 'EasyPaisa' ? 'bg-green-100 text-green-800' :
+                                      s.payMode === 'JazzCash' ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800';
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                        <td class="p-3 font-mono font-bold text-xs text-brand-900">${s.invoiceNo}</td>
+                        <td class="p-3 text-slate-500 text-xs">${s.date}</td>
+                        <td class="p-3 font-medium text-slate-800 text-xs">${s.customer || '-'}</td>
+                        <td class="p-3">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold ${payBadgeColor}">
+                                ${s.payMode || 'Cash'}
+                            </span>
+                        </td>
+                        <td class="p-3 text-xs text-slate-600">${s.itemsCount} ${currentLang === 'ur' ? 'اشیاء' : 'items'}</td>
+                        <td class="p-3 font-bold text-slate-900 text-xs">Rs. ${s.totalAmount}</td>
+                        <td class="p-3 text-emerald-700 font-semibold text-xs">+Rs. ${s.profit}</td>
+                        <td class="p-3">
+                            <div class="flex items-center gap-1.5">
+                                <button onclick="viewPastReceipt('${s.invoiceNo}')" title="رسید دیکھیں" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-800 px-2 py-1 rounded-lg transition font-medium">
+                                    🧾 ${currentLang === 'ur' ? 'رسید' : 'Receipt'}
+                                </button>
+                                <button onclick="deleteSaleRecord('${s.invoiceNo}')" title="بل حذف کریں" class="text-xs text-rose-500 hover:text-rose-700 p-1 transition">
+                                    🗑️
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function viewPastReceipt(invoiceNo) {
+            const sale = salesHistory.find(s => s.invoiceNo === invoiceNo);
+            if(sale) {
+                lastReceiptData = sale;
+                showReceiptModal(sale);
+            }
+        }
+
+        function deleteSaleRecord(invoiceNo) {
+            if(confirm(currentLang === 'ur' ? `کیا آپ بل "${invoiceNo}" حذف کرنا چاہتے ہیں؟` : `Delete bill ${invoiceNo}?`)) {
+                salesHistory = salesHistory.filter(s => s.invoiceNo !== invoiceNo);
+                saveData();
+                renderSales();
+                showToast(currentLang === 'ur' ? 'بل حذف کر دیا گیا' : 'Invoice deleted', 'info');
+            }
+        }
+
+        // Payroll Management
+        function renderPayroll() {
+            const tbody = document.getElementById('payroll-table-body');
+            tbody.innerHTML = '';
+
+            let totalSal = 0;
+            let totalPaid = 0;
+
+            employees.forEach(e => {
+                totalSal += e.salary;
+                if(e.paid) totalPaid += e.salary;
+            });
+
+            document.getElementById('stat-payroll-count').innerText = employees.length;
+            document.getElementById('stat-payroll-total').innerText = `Rs. ${totalSal.toLocaleString()}`;
+            document.getElementById('stat-payroll-paid').innerText = `Rs. ${totalPaid.toLocaleString()}`;
+
+            if(employees.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400 text-xs">${currentLang === 'ur' ? 'کوئی ملازم درج نہیں' : 'No employees listed'}</td></tr>`;
+                return;
+            }
+
+            employees.forEach(e => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                        <td class="p-3 font-semibold text-slate-800">${e.name}</td>
+                        <td class="p-3 text-slate-600 text-xs">${e.role}</td>
+                        <td class="p-3 font-mono text-xs text-slate-500">${e.phone}</td>
+                        <td class="p-3 font-bold text-slate-900">Rs. ${e.salary.toLocaleString()}</td>
+                        <td class="p-3">
+                            <span class="px-2.5 py-1 rounded-full text-xs font-semibold ${e.paid ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
+                                ${e.paid ? (currentLang === 'ur' ? 'ادا شدہ (Paid)' : 'Paid') : (currentLang === 'ur' ? 'باقی ہے (Pending)' : 'Pending')}
+                            </span>
+                        </td>
+                        <td class="p-3">
+                            <div class="flex items-center gap-1.5">
+                                <button onclick="toggleSalaryStatus(${e.id})" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-800 px-2.5 py-1 rounded-lg transition font-medium">
+                                    ${e.paid ? (currentLang === 'ur' ? 'باقی کریں' : 'Mark Pending') : (currentLang === 'ur' ? 'ادائیگی کریں' : 'Mark Paid')}
+                                </button>
+                                <button onclick="deleteEmployee(${e.id})" title="ملازم حذف کریں" class="text-xs text-rose-500 hover:text-rose-700 p-1">
+                                    🗑️
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function toggleSalaryStatus(id) {
+            const emp = employees.find(e => e.id === id);
+            if(emp) {
+                emp.paid = !emp.paid;
+                saveData();
+                renderPayroll();
+                showToast(emp.paid 
+                    ? (currentLang === 'ur' ? `${emp.name} کی تنخواہ ادا کر دی گئی` : `Salary paid for ${emp.name}`) 
+                    : (currentLang === 'ur' ? `${emp.name} کی تنخواہ باقی کی گئی` : `Salary marked pending for ${emp.name}`), 'info');
+            }
+        }
+
+        function openAddEmployeeModal() {
+            document.getElementById('e-edit-id').value = '';
+            document.getElementById('e-name').value = '';
+            document.getElementById('e-role').value = currentLang === 'ur' ? 'سیلز مین' : 'Salesman';
+            document.getElementById('e-phone').value = '';
+            document.getElementById('e-salary').value = '30000';
+            document.getElementById('employee-modal').classList.remove('hidden');
+        }
+
+        function closeAddEmployeeModal() {
+            document.getElementById('employee-modal').classList.add('hidden');
+        }
+
+        function saveEmployeeForm() {
+            const name = document.getElementById('e-name').value.trim();
+            const role = document.getElementById('e-role').value.trim();
+            const phone = document.getElementById('e-phone').value.trim();
+            const salary = parseFloat(document.getElementById('e-salary').value);
+
+            if(!name || isNaN(salary)) {
+                playBeep('alert');
+                showToast(currentLang === 'ur' ? 'نام اور تنخواہ درج کرنا لازمی ہے!' : 'Name and salary are required!', 'alert');
+                return;
+            }
+
+            employees.push({ id: Date.now(), name, role, phone, salary, paid: false });
+            saveData();
+            closeAddEmployeeModal();
+            renderAll();
+            showToast(currentLang === 'ur' ? 'نیا ملازم شامل کر دیا گیا' : 'Employee added', 'success');
+        }
+
+        function deleteEmployee(id) {
+            const emp = employees.find(e => e.id === id);
+            if(!emp) return;
+            if(confirm(currentLang === 'ur' ? `کیا آپ ملازم "${emp.name}" کو حذف کرنا چاہتے ہیں؟` : `Delete employee ${emp.name}?`)) {
+                employees = employees.filter(e => e.id !== id);
+                saveData();
+                renderPayroll();
+                showToast(currentLang === 'ur' ? 'ملازم حذف کر دیا گیا' : 'Employee deleted', 'info');
+            }
+        }
+
+        // Backup & Restore
+        function exportBackup() {
+            const data = {
+                store: "پاک کریانہ اینڈ جنرل سٹور",
+                exportDate: new Date().toISOString(),
+                products,
+                salesHistory,
+                employees,
+                customerKhata,
+                supplierKhata
+            };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Pak-Store-Backup-${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast(currentLang === 'ur' ? 'بیک اپ کامیابی سے ڈاؤن لوڈ ہو گیا' : 'Backup downloaded', 'success');
+        }
+
+        function importBackup(event) {
+            const file = event.target.files[0];
+            if(!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    if(parsed.products && parsed.salesHistory && parsed.employees) {
+                        if(confirm(currentLang === 'ur' ? 'کیا آپ اس بیک اپ فائل کو بحال کرنا چاہتے ہیں؟ موجودہ ڈیٹا تبدیل ہو جائے گا۔' : 'Restore this backup? Existing data will be overwritten.')) {
+                            products = parsed.products;
+                            salesHistory = parsed.salesHistory;
+                            employees = parsed.employees;
+                            if(parsed.customerKhata) customerKhata = parsed.customerKhata;
+                            if(parsed.supplierKhata) supplierKhata = parsed.supplierKhata;
+                            saveData();
+                            renderAll();
+                            showToast(currentLang === 'ur' ? 'ڈیٹا کامیابی سے بحال ہو گیا' : 'Data restored successfully', 'success');
+                        }
+                    } else {
+                        showToast(currentLang === 'ur' ? 'فائل کا فارمیٹ درست نہیں ہے!' : 'Invalid backup file format!', 'alert');
+                    }
+                } catch(err) {
+                    showToast(currentLang === 'ur' ? 'فائل پڑھنے میں غلطی ہوئی!' : 'Failed to parse JSON file!', 'alert');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = ''; // Reset input
+        }
+
+        // Keyboard Shortcut: Press F2 to focus barcode
+        window.addEventListener('keydown', (e) => {
+            if(e.key === 'F2') {
+                e.preventDefault();
+                switchTab('pos');
+                document.getElementById('barcode-input').focus();
+            }
+        });
+
+        // Initialize Language on Load
+        applyLanguageSettings();
+    </script>
+</body>
+</html>
